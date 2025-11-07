@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - ITT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: rgba(135, 206, 250, 0.1);
+            color: #2c3e50;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: rgba(135, 206, 250, 0.05);
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .customers-section {
+            padding: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .customer-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .customer-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .customer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .customer-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .customer-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #3498db;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+        
+        .customer-name:hover {
+            background: rgba(135, 206, 250, 0.1);
+        }
+        
+        .customer-name[contenteditable="true"] {
+            background: #fffbe6;
+            border: 2px solid #3498db;
+        }
+        
+        .customer-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .package-title {
+            background: rgba(135, 206, 250, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .package-text {
+            cursor: pointer;
+            padding: 3px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+        
+        .package-text:hover {
+            background: rgba(255,255,255,0.7);
+        }
+        
+        .package-text[contenteditable="true"] {
+            background: #fffbe6;
+            border: 2px solid #3498db;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+        
+        .btn-view {
+            background: #2980b9;
+            color: white;
+        }
+        
+        .btn-delete {
+            background: #2980b9;
+            color: white;
+        }
+        
+        .btn-edit {
+            background: #2980b9;
+            color: white;
+        }
+        
+        .btn-save {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: #757575;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.8;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .excel-btn {
+            position: fixed;
+            top: 20px;
+            right: 140px;
+            background: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .pdf-editor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: none;
+        }
+        
+        .pdf-editor-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            width: 90%;
+            height: 90%;
+            border-radius: 10px;
+            padding: 20px;
+            overflow: auto;
+        }
+        
+        .pdf-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2196F3;
+        }
+        
+        .pdf-editor iframe {
+            width: 100%;
+            height: calc(100% - 80px);
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.close()">Back</button>
+    <button class="excel-btn" onclick="exportToExcel()">Export Excel</button>
+    <button class="refresh-btn" onclick="loadDashboard()">Refresh</button>
+    
+    <div class="container">
+        <div class="header">
+            <div style="position: relative; margin-bottom: 10px;">
+                <img src="arrabian vibes logo.png" alt="Arabian Vibes Logo" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 100px; width: auto; border-radius: 10px;">
+                <div style="text-align: center;">
+                    <h1 style="margin: 0; color: #2c3e50;">Travel Dashboard</h1>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #7f8c8d;">Customer & Package Management</p>
+                </div>
+            </div>
+            <p style="color: #34495e;">Powered by <strong>Arabian Vibes </strong></p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCustomers">0</div>
+                <div>Total Travelers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPackages">0</div>
+                <div>Tour Packages</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayCustomers">0</div>
+                <div>Today's Bookings</div>
+            </div>
+        </div>
+        
+        <div class="customers-section">
+            <h2 class="section-title">Traveler Records</h2>
+            <div class="customer-grid" id="customerGrid">
+                <!-- Customer cards will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Editor Modal -->
+    <div class="pdf-editor" id="pdfEditor">
+        <div class="pdf-editor-content">
+            <div class="pdf-editor-header">
+                <h3>Edit PDF Content</h3>
+                <div>
+                    <button class="btn btn-save" onclick="savePDFChanges()">✓ Save PDF</button>
+                    <button class="btn btn-cancel" onclick="closePDFEditor()">✗ Close</button>
+                </div>
+            </div>
+            <div id="pdfContent" contenteditable="true" style="border: 1px solid #ddd; padding: 20px; height: calc(100% - 80px); overflow: auto; background: white;"></div>
+        </div>
+    </div>
+
+    <script>
+        class DashboardManager {
+            constructor() {
+                this.storageKey = 'itt_customer_data';
+            }
+            
+            getAllCustomers() {
+                const data = localStorage.getItem(this.storageKey);
+                return data ? JSON.parse(data) : [];
+            }
+            
+            deleteCustomer(id) {
+                const data = this.getAllCustomers();
+                const filtered = data.filter(item => item.id !== id);
+                localStorage.setItem(this.storageKey, JSON.stringify(filtered));
+                this.loadDashboard();
+            }
+            
+            updateCustomer(id, customerName, packageTitle) {
+                const data = this.getAllCustomers();
+                const customerIndex = data.findIndex(item => item.id === id);
+                if (customerIndex !== -1) {
+                    data[customerIndex].customerName = customerName;
+                    data[customerIndex].packageTitle = packageTitle;
+                    data[customerIndex].updatedAt = new Date().toISOString();
+                    localStorage.setItem(this.storageKey, JSON.stringify(data));
+                    this.loadDashboard();
+                    return true;
+                }
+                return false;
+            }
+            
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-IN') + ' ' + date.toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'});
+            }
+            
+            getTodayCount(customers) {
+                const today = new Date().toDateString();
+                return customers.filter(customer => 
+                    new Date(customer.createdAt).toDateString() === today
+                ).length;
+            }
+            
+            loadDashboard() {
+                const customers = this.getAllCustomers();
+                const customerGrid = document.getElementById('customerGrid');
+                
+                // Update stats
+                document.getElementById('totalCustomers').textContent = customers.length;
+                document.getElementById('totalPackages').textContent = new Set(customers.map(c => c.packageTitle)).size;
+                document.getElementById('todayCustomers').textContent = this.getTodayCount(customers);
+                
+                if (customers.length === 0) {
+                    customerGrid.innerHTML = `
+                        <div class="no-data">
+                            <h3>No bookings found</h3>
+                            <p>Start adding travelers from the main booking page</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Sort by newest first
+                customers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                customerGrid.innerHTML = customers.map(customer => `
+                    <div class="customer-card" id="card-${customer.id}">
+                        <div class="customer-header">
+                            <div class="customer-name" id="name-${customer.id}" onclick="editCustomerName(${customer.id})">${customer.customerName}</div>
+                            <div class="customer-date">${this.formatDate(customer.createdAt)}</div>
+                        </div>
+                        <div class="package-title">
+                            <strong>Tour Package:</strong> <span class="package-text" id="package-${customer.id}" onclick="editPackageTitle(${customer.id})">${customer.packageTitle}</span>
+                            ${customer.packageDetails ? `<br><small><strong>Price:</strong> ${customer.packageDetails.price} | <strong>Duration:</strong> ${customer.packageDetails.duration}</small>` : ''}
+                            ${customer.hotelDetails ? `<br><small><strong>Hotel:</strong> ${customer.hotelDetails.hotelName} | <strong>Rating:</strong> ${customer.hotelDetails.hotelRating}</small>` : ''}
+                        </div>
+                        <div class="actions" id="actions-${customer.id}">
+                            <button class="btn btn-view" onclick="viewCustomerPDF(${customer.id})">
+                                View Itinerary
+                            </button>
+                            <button class="btn btn-edit" onclick="editCustomer(${customer.id})">
+                                Edit Booking
+                            </button>
+                            <button class="btn btn-edit" onclick="editCustomerPDF(${customer.id})">
+                                Edit Itinerary
+                            </button>
+                            <button class="btn btn-delete" onclick="deleteCustomer(${customer.id})">
+                                Cancel Booking
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        const dashboardManager = new DashboardManager();
+        
+        function loadDashboard() {
+            dashboardManager.loadDashboard();
+        }
+        
+        function deleteCustomer(id) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                dashboardManager.deleteCustomer(id);
+            }
+        }
+        
+        function viewCustomerPDF(id) {
+            const customers = dashboardManager.getAllCustomers();
+            const customer = customers.find(c => c.id === id);
+            
+            if (customer && customer.pdfData) {
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(customer.pdfData);
+                newWindow.document.close();
+            } else {
+                alert('Itinerary data not available for this customer');
+            }
+        }
+        
+        let editingCustomer = null;
+        
+        function editCustomer(id) {
+            // Open main ITT page with customer data for editing
+            const customers = dashboardManager.getAllCustomers();
+            const customer = customers.find(c => c.id === id);
+            
+            if (customer) {
+                // Open ITT page with edit parameter
+                const editUrl = `itt.html?editCustomer=${id}`;
+                window.open(editUrl, '_blank');
+            } else {
+                alert('Customer not found');
+            }
+        }
+        
+        function editCustomerName(id) {
+            editCustomer(id);
+        }
+        
+        function editPackageTitle(id) {
+            editCustomer(id);
+        }
+        
+        let currentEditingPDFId = null;
+        
+        function editCustomerPDF(id) {
+            const customers = dashboardManager.getAllCustomers();
+            const customer = customers.find(c => c.id === id);
+            
+            if (!customer || !customer.pdfData) {
+                alert('Itinerary data not available for this customer');
+                return;
+            }
+            
+            currentEditingPDFId = id;
+            const pdfEditor = document.getElementById('pdfEditor');
+            const pdfContent = document.getElementById('pdfContent');
+            
+            // Load PDF content for editing
+            pdfContent.innerHTML = customer.pdfData;
+            pdfEditor.style.display = 'block';
+        }
+        
+        function savePDFChanges() {
+            if (!currentEditingPDFId) return;
+            
+            const pdfContent = document.getElementById('pdfContent');
+            const updatedPDFData = pdfContent.innerHTML;
+            
+            const customers = dashboardManager.getAllCustomers();
+            const customerIndex = customers.findIndex(c => c.id === currentEditingPDFId);
+            
+            if (customerIndex !== -1) {
+                customers[customerIndex].pdfData = updatedPDFData;
+                customers[customerIndex].updatedAt = new Date().toISOString();
+                localStorage.setItem('itt_customer_data', JSON.stringify(customers));
+                
+                alert('Itinerary updated successfully!');
+                closePDFEditor();
+            }
+        }
+        
+        function closePDFEditor() {
+            document.getElementById('pdfEditor').style.display = 'none';
+            currentEditingPDFId = null;
+        }
+        
+        function exportToExcel() {
+            const customers = dashboardManager.getAllCustomers();
+            
+            if (customers.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            let csvContent = "Customer Name,Package Title,Package Price,Package Duration,Package Location,Package Description,Hotel Name,Hotel Rating,Hotel Location,Hotel Amenities,Created Date,Status\n";
+            
+            customers.forEach(customer => {
+                const date = new Date(customer.createdAt).toLocaleDateString('en-IN');
+                const pkg = customer.packageDetails || {};
+                const hotel = customer.hotelDetails || {};
+                
+                csvContent += `"${customer.customerName}","${customer.packageTitle}","${pkg.price || 'N/A'}","${pkg.duration || 'N/A'}","${pkg.location || 'N/A'}","${pkg.description || 'N/A'}","${hotel.hotelName || 'N/A'}","${hotel.hotelRating || 'N/A'}","${hotel.hotelLocation || 'N/A'}","${hotel.amenities || 'N/A'}","${date}","${customer.status}"\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `customer_data_detailed_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert('Data exported to Excel successfully!');
+            }
+        }
+        
+        // Load dashboard when page loads
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>
