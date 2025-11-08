@@ -90,6 +90,9 @@
       cursor:pointer;
       font-weight:600;
     }
+    #downloadPdf{
+      background:#1e3a8a;
+    }
     button.secondary{ background:#666; }
 
     [contenteditable="true"]{
@@ -209,6 +212,25 @@
       .section { margin-bottom: 8px !important; }
       table { margin-bottom: 10px !important; }
       th:last-child, td:last-child { display: none !important; } /* Hide Actions column */
+      #transferTable th:last-child, #transferTable td:last-child { display: none !important; } /* Hide transfer actions */
+      #transferTable th:contains('🗑️'), #transferTable td:has(button) { display: none !important; }
+      #itineraryTable th:last-child, #itineraryTable td:last-child { display: none !important; } /* Hide itinerary actions */
+      #itineraryTable { font-size: 14px !important; table-layout: auto !important; width: 100% !important; }
+      #itineraryTable th, #itineraryTable td { padding: 8px !important; font-size: 14px !important; vertical-align: top !important; word-wrap: break-word !important; }
+      #itineraryTable th:nth-child(1) { width: 8% !important; }
+      #itineraryTable th:nth-child(2) { width: 12% !important; }
+      #itineraryTable th:nth-child(3) { width: 12% !important; }
+      #itineraryTable th:nth-child(4) { width: auto !important; white-space: normal !important; min-width: 150px !important; max-width: 300px !important; }
+      #itineraryTable th:nth-child(5) { width: 12% !important; }
+      #itineraryTable th:nth-child(6) { width: 8% !important; }
+      #itineraryTable th:nth-child(7) { width: 8% !important; }
+      #itineraryTable td:nth-child(1) { width: 8% !important; }
+      #itineraryTable td:nth-child(2) { width: 12% !important; }
+      #itineraryTable td:nth-child(3) { width: 12% !important; }
+      #itineraryTable td:nth-child(4) { width: auto !important; white-space: normal !important; word-break: break-word !important; min-width: 150px !important; max-width: 300px !important; }
+      #itineraryTable td:nth-child(5) { width: 12% !important; }
+      #itineraryTable td:nth-child(6) { width: 8% !important; }
+      #itineraryTable td:nth-child(7) { width: 8% !important; word-break: break-all !important; }
       .page { 
         padding: 10px !important;
         position: relative;
@@ -231,6 +253,10 @@
       hr.soft { margin: 8px 0 !important; }
       img { max-width: 100% !important; height: auto !important; page-break-inside: avoid !important; }
       #packageImage, #hotelImage { width: 100% !important; max-width: 350px !important; height: auto !important; }
+      table { page-break-inside: avoid !important; }
+      tr { page-break-inside: avoid !important; }
+      td { word-break: break-word !important; }
+      .table-container { overflow: visible !important; width: 100% !important; }
     }
   </style>
   <style>
@@ -357,8 +383,6 @@
               <div style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <span style="font-size:16px; color:#075056; font-weight:600;">Travel Partner:</span>
                 <span id="customerName" contenteditable="true" style="font-size:16px; color:black; padding:8px 12px; border:2px solid #1e3a8a; border-radius:8px; min-width:150px; background:#f8f9fa; box-shadow:0 2px 4px rgba(0,0,0,0.1);" data-placeholder="Enter Travel Partner">Enter Travel Partner</span>
-                <button class="editCustomerBtn" style="background:transparent; color:#1e3a8a; border:none; padding:4px; cursor:pointer; font-size:14px;">✏️</button>
-                <button class="deleteCustomerBtn" style="background:transparent; color:#d32f2f; border:none; padding:4px; cursor:pointer; font-size:14px;">🗑️</button>
                 
                 <span style="font-size:20px; color:#075056; margin:0 5px;">|</span>
                 
@@ -462,7 +486,7 @@
         </div>
       </section>
       <!-- Transfer Details -->
-      <section class="section">
+      <section class="section" style="page-break-before: always;">
         <h3 style="font-size:24px; color:black; margin-bottom:10px;">Transfer Details</h3>
         <div class="controls" style="margin-bottom:10px;">
           <button id="addTransferBtn" style="background:#1e3a8a;">+ Add Transfer</button>
@@ -478,7 +502,6 @@
                 <th style="padding:12px; text-align:left; border-right:1px solid #ddd;">Flight Details</th>
                 <th style="padding:12px; text-align:left; border-right:1px solid #ddd;">Transfer Type</th>
                 <th style="padding:12px; text-align:left; border-right:1px solid #ddd;">POC (Person of Contact)</th>
-                <th style="padding:6px; text-align:center; width:30px; font-size:10px;">🗑️</th>
               </tr>
             </thead>
             <tbody>
@@ -490,7 +513,6 @@
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Flight ABC123</td>
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Private</td>
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">+971-123456789</td>
-                <td style="padding:6px; text-align:center;"><button class="deleteTransferBtn" style="background:transparent; color:#d32f2f; border:none; padding:1px; cursor:pointer; font-size:10px;">🗑️</button></td>
               </tr>
               <tr style="border-bottom:1px solid #eee;">
                 <td style="padding:12px; border-right:1px solid #eee;"><input type="date" id="transferDate2" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px;"></td>
@@ -500,7 +522,6 @@
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Flight XYZ789</td>
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Private</td>
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">+971-123456789</td>
-                <td style="padding:6px; text-align:center;"><button class="deleteTransferBtn" style="background:transparent; color:#d32f2f; border:none; padding:1px; cursor:pointer; font-size:10px;">🗑️</button></td>
               </tr>
             </tbody>
           </table>
@@ -527,7 +548,6 @@
                   <th style="padding:12px; text-align:left; border-right:1px solid #ddd; width:100px;">Return Time</th>
                   <th style="padding:12px; text-align:left; border-right:1px solid #ddd; width:80px;">Vehicle</th>
                   <th style="padding:12px; text-align:left; border-right:1px solid #ddd; width:120px;">POC</th>
-                  <th style="padding:6px; text-align:center; width:30px; font-size:10px;">🗑️</th>
                 </tr>
               </thead>
               <tbody>
@@ -543,7 +563,6 @@
                   </td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">SIC</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
-                  <td style="padding:6px; text-align:center;"><button class="deleteItineraryBtn" style="background:transparent; color:#d32f2f; border:none; padding:1px; cursor:pointer; font-size:10px;">🗑️</button></td>
                 </tr>
                 <tr style="border-bottom:1px solid #eee;">
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-size:12px;">Day 2</td>
@@ -557,7 +576,6 @@
                   </td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">SIC</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
-                  <td style="padding:6px; text-align:center;"><button class="deleteItineraryBtn" style="background:transparent; color:#d32f2f; border:none; padding:1px; cursor:pointer; font-size:10px;">🗑️</button></td>
                 </tr>
                 <tr style="border-bottom:1px solid #eee;">
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-size:12px;">Day 3</td>
@@ -571,7 +589,6 @@
                   </td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">SIC</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
-                  <td style="padding:6px; text-align:center;"><button class="deleteItineraryBtn" style="background:transparent; color:#d32f2f; border:none; padding:1px; cursor:pointer; font-size:10px;">🗑️</button></td>
                 </tr>
                 <tr style="border-bottom:1px solid #eee;">
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-size:12px;">Day 4</td>
@@ -583,7 +600,6 @@
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">-</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">Private</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
-                  <td style="padding:6px; text-align:center;"><button class="deleteItineraryBtn" style="background:transparent; color:#d32f2f; border:none; padding:1px; cursor:pointer; font-size:10px;">🗑️</button></td>
                 </tr>
                 <tr style="background:#f8f9fa;">
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-style:italic; font-size:11px;">Day 4 (5D)</td>
@@ -597,7 +613,6 @@
                   </td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">SIC</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
-                  <td style="padding:6px; text-align:center;"><button class="deleteItineraryBtn" style="background:transparent; color:#d32f2f; border:none; padding:1px; cursor:pointer; font-size:10px;">🗑️</button></td>
                 </tr>
               </tbody>
             </table>
@@ -1054,9 +1069,113 @@
           if (btn) btn.style.display = 'none';
         });
         
-        // Show hotel table in PDF
+        // Convert all date and time inputs to text for PDF
+        const travelDateInput = element.querySelector('#travelDate');
+        if (travelDateInput && travelDateInput.value) {
+          const dateText = new Date(travelDateInput.value).toLocaleDateString('en-GB');
+          const textSpan = document.createElement('span');
+          textSpan.textContent = dateText;
+          textSpan.style.cssText = 'font-size:14px; color:#075056; font-weight:600;';
+          textSpan.id = 'travelDateText';
+          travelDateInput.parentNode.replaceChild(textSpan, travelDateInput);
+        }
+        
+        // Convert all date inputs in tables to text
+        const dateInputs = element.querySelectorAll('input[type="date"]');
+        dateInputs.forEach((input, index) => {
+          if (input.value) {
+            const dateText = new Date(input.value).toLocaleDateString('en-GB');
+            const textSpan = document.createElement('span');
+            textSpan.textContent = dateText;
+            textSpan.style.cssText = 'font-size:9px; color:#333;';
+            textSpan.className = 'pdf-date-text';
+            input.parentNode.replaceChild(textSpan, input);
+          }
+        });
+        
+        // Convert all time inputs in tables to text
+        const timeInputs = element.querySelectorAll('input[type="time"]');
+        timeInputs.forEach((input, index) => {
+          if (input.value) {
+            const textSpan = document.createElement('span');
+            textSpan.textContent = input.value;
+            textSpan.style.cssText = 'font-size:9px; color:#333;';
+            textSpan.className = 'pdf-time-text';
+            input.parentNode.replaceChild(textSpan, input);
+          }
+        });
+        
+        // Modify itinerary table for PDF
+        const itineraryTable = element.querySelector('#itineraryTable');
+        if (itineraryTable) {
+          itineraryTable.style.fontSize = '8px';
+          itineraryTable.style.tableLayout = 'fixed';
+          
+          const headers = itineraryTable.querySelectorAll('th');
+          const cells = itineraryTable.querySelectorAll('td');
+          
+          headers.forEach(th => {
+            th.style.padding = '3px';
+            th.style.fontSize = '8px';
+          });
+          
+          cells.forEach(td => {
+            td.style.padding = '3px';
+            td.style.fontSize = '8px';
+          });
+          
+          // Set column widths
+          if (headers.length >= 7) {
+            headers[0].style.width = '5%'; // Day
+            headers[1].style.width = '5%'; // Date
+            headers[2].style.width = '5%'; // Pickup
+            headers[3].style.width = '50%'; // Activity
+            headers[4].style.width = '5%'; // Return
+            headers[5].style.width = '8%'; // Vehicle
+            headers[6].style.width = '22%'; // POC
+            
+            headers[2].innerHTML = 'Pickup<br>Time';
+            headers[4].innerHTML = 'Return<br>Time';
+          }
+        }
+        
+        // Show hotel table in PDF and hide image layout
         const hotelTableContainer = document.getElementById('hotelTableContainer');
         if (hotelTableContainer) hotelTableContainer.style.display = 'block';
+        
+        // Hide hotel image sections for PDF
+        const hotelImageSections = element.querySelectorAll('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
+        hotelImageSections.forEach(section => {
+          if (section.querySelector('h2') && section.querySelector('img')) {
+            section.style.display = 'none';
+          }
+        });
+        
+        // Populate hotel table with current data
+        const hotelTable = element.querySelector('#hotelTable tbody');
+        if (hotelTable) {
+          // Clear existing rows
+          hotelTable.innerHTML = '';
+          
+          // Get hotel data from the form
+          const hotelName = element.querySelector('h2[contenteditable="true"]')?.textContent || 'Dubai Hotel or Similar 3-Star';
+          const checkinDate = element.querySelector('#checkinDate')?.value || 'Day 1';
+          const checkoutDate = element.querySelector('#checkoutDate')?.value || 'Day 4';
+          const roomType = element.querySelector('span[contenteditable="true"]')?.textContent || 'Standard Room';
+          const mealPlan = element.querySelectorAll('span[contenteditable="true"]')[2]?.textContent || 'Breakfast';
+          
+          // Create table row
+          const row = document.createElement('tr');
+          row.style.borderBottom = '1px solid #eee';
+          row.innerHTML = `
+            <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${hotelName}</td>
+            <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${checkinDate ? new Date(checkinDate).toLocaleDateString('en-GB') : 'Day 1'}</td>
+            <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${checkoutDate ? new Date(checkoutDate).toLocaleDateString('en-GB') : 'Day 4'}</td>
+            <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${roomType}</td>
+            <td style="padding:8px; font-size:12px;">${mealPlan}</td>
+          `;
+          hotelTable.appendChild(row);
+        }
         
         // Hide similar packages section and View Full Package button
         const similarSection = document.querySelector('section[style*="padding: 0px 0; background: #f8fbfc"]');
@@ -1097,7 +1216,7 @@
           if (logoImg && logoImg.src) {
             const pdfLogo = document.createElement('img');
             pdfLogo.src = logoImg.src;
-            pdfLogo.style.cssText = 'width: 180px; height: 80px; object-fit: contain; position: absolute; left: 20px;';
+            pdfLogo.style.cssText = 'width: 220px; height: 100px; object-fit: contain; position: absolute; left: 20px;';
             pdfHeader.appendChild(pdfLogo);
           }
         }
@@ -1106,10 +1225,7 @@
         logoSpacer.style.cssText = 'width: 180px;';
         pdfHeader.appendChild(logoSpacer);
         
-        const travelTitle = document.createElement('h1');
-        travelTitle.textContent = 'TRAVEL ITINERARY';
-        travelTitle.style.cssText = 'font-size: 24px; font-weight: bold; color: black; margin: 0; text-align: center; flex: 1;';
-        pdfHeader.appendChild(travelTitle);
+
         
         const rightSpacer = document.createElement('div');
         rightSpacer.style.cssText = 'width: 180px;';
@@ -1151,16 +1267,7 @@
         thankYouDiv.textContent = 'Thank you for choosing us for your travel needs!';
         element.appendChild(thankYouDiv);
         
-        // Add date under Dubai title for PDF only
-        const destTitle = element.querySelector('#destTitle');
-        let dateDiv;
-        if (destTitle) {
-          dateDiv = document.createElement('div');
-          dateDiv.id = 'pdfDateDiv';
-          dateDiv.style.cssText = 'font-size:14px; color:#666; margin-top:5px;';
-          dateDiv.textContent = 'Date: ' + new Date().toLocaleDateString('en-GB');
-          destTitle.parentNode.appendChild(dateDiv);
-        }
+
         
         const options = {
           margin: [5, 5, 5, 5],
@@ -1189,6 +1296,50 @@
           controls.forEach(btn => {
             if (btn) btn.style.display = '';
           });
+          
+          // Restore hotel image sections
+          const hotelImageSections = element.querySelectorAll('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
+          hotelImageSections.forEach(section => {
+            if (section.querySelector('h2') && section.querySelector('img')) {
+              section.style.display = 'flex';
+            }
+          });
+          
+          // Restore travel date input
+          const travelDateSpan = element.querySelector('#travelDateText');
+          if (travelDateSpan && travelDateSpan.parentNode) {
+            const newInput = document.createElement('input');
+            newInput.type = 'date';
+            newInput.id = 'travelDate';
+            newInput.style.cssText = 'padding:6px 8px; border:2px solid #075056; border-radius:4px; font-size:12px; width:140px;';
+            travelDateSpan.parentNode.replaceChild(newInput, travelDateSpan);
+          }
+          
+          // Restore all date inputs
+          const dateTexts = element.querySelectorAll('.pdf-date-text');
+          dateTexts.forEach(span => {
+            const newInput = document.createElement('input');
+            newInput.type = 'date';
+            newInput.style.cssText = 'padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px;';
+            span.parentNode.replaceChild(newInput, span);
+          });
+          
+          // Restore all time inputs
+          const timeTexts = element.querySelectorAll('.pdf-time-text');
+          timeTexts.forEach(span => {
+            const newInput = document.createElement('input');
+            newInput.type = 'time';
+            newInput.style.cssText = 'padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;';
+            span.parentNode.replaceChild(newInput, span);
+          });
+          
+          // Restore original table headers
+          const itineraryHeaders = element.querySelectorAll('#itineraryTable th');
+          if (itineraryHeaders.length >= 7) {
+            itineraryHeaders[2].innerHTML = 'Pickup Time';
+            itineraryHeaders[4].innerHTML = 'Return Time';
+          }
+          
           if (similarSection) similarSection.style.display = '';
           // Hide hotel table again
           if (hotelTableContainer) hotelTableContainer.style.display = 'none';
@@ -1222,11 +1373,9 @@
             customerNameElement.style.padding = '';
             customerNameElement.style.color = '';
           }
-          // Remove thank you message and date
+          // Remove thank you message
           const thankYouDiv = element.querySelector('#pdfThankYou');
           if (thankYouDiv && thankYouDiv.parentNode) thankYouDiv.parentNode.removeChild(thankYouDiv);
-          const pdfDateDiv = element.querySelector('#pdfDateDiv');
-          if (pdfDateDiv && pdfDateDiv.parentNode) pdfDateDiv.parentNode.removeChild(pdfDateDiv);
           console.log('PDF generated successfully');
         }).catch((error) => {
           console.error('PDF generation error:', error);
@@ -1234,6 +1383,14 @@
           controls.forEach(btn => {
             if (btn) btn.style.display = '';
           });
+          
+          // Restore hotel image sections
+          const hotelImageSections = element.querySelectorAll('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
+          hotelImageSections.forEach(section => {
+            if (section.querySelector('h2') && section.querySelector('img')) {
+              section.style.display = 'flex';
+            }
+          });
           if (similarSection) similarSection.style.display = '';
           // Hide hotel table again
           if (hotelTableContainer) hotelTableContainer.style.display = 'none';
@@ -1267,11 +1424,9 @@
             customerNameElement.style.padding = '';
             customerNameElement.style.color = '';
           }
-          // Remove thank you message and date
+          // Remove thank you message
           const thankYouDiv = element.querySelector('#pdfThankYou');
           if (thankYouDiv && thankYouDiv.parentNode) thankYouDiv.parentNode.removeChild(thankYouDiv);
-          const pdfDateDiv = element.querySelector('#pdfDateDiv');
-          if (pdfDateDiv && pdfDateDiv.parentNode) pdfDateDiv.parentNode.removeChild(pdfDateDiv);
           alert('PDF generation failed: ' + error.message);
         });
         
@@ -1728,6 +1883,10 @@
         handledBy.innerText = "Enter Handler Name";
       }
     });
+    
+
+    
+
     
     // Main hotel section delete functionality
     document.querySelector(".deleteHotelSectionBtn").addEventListener("click", () => {

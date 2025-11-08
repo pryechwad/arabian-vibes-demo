@@ -319,7 +319,21 @@
         </div>
         
         <div class="customers-section">
-            <h2 class="section-title">Traveler Records</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title">Traveler Records</h2>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <input type="text" id="searchBox" placeholder="🔍 Search customers..." style="padding: 10px 15px; border: 2px solid #075056; border-radius: 6px; width: 250px; font-size: 14px;">
+                    <select id="sortFilter" style="padding: 10px 15px; border: 2px solid #075056; border-radius: 6px; font-size: 14px; min-width: 150px;">
+                        <option value="all">📅 All Time</option>
+                        <option value="today">📍 Today</option>
+                        <option value="7days">📊 Last 7 Days</option>
+                        <option value="30days">📈 Last 30 Days</option>
+                        <option value="90days">📉 Last 90 Days</option>
+                        <option value="6months">📋 Last 6 Months</option>
+                        <option value="1year">📆 Last Year</option>
+                    </select>
+                </div>
+            </div>
             <div class="customer-grid" id="customerGrid">
                 <!-- Customer cards will be loaded here -->
             </div>
@@ -384,14 +398,15 @@
                 ).length;
             }
             
-            loadDashboard() {
-                const customers = this.getAllCustomers();
+            loadDashboard(filteredCustomers = null) {
+                const allCustomers = this.getAllCustomers();
+                const customers = filteredCustomers || allCustomers;
                 const customerGrid = document.getElementById('customerGrid');
                 
-                // Update stats
-                document.getElementById('totalCustomers').textContent = customers.length;
-                document.getElementById('totalPackages').textContent = new Set(customers.map(c => c.packageTitle)).size;
-                document.getElementById('todayCustomers').textContent = this.getTodayCount(customers);
+                // Update stats (always use all customers for stats)
+                document.getElementById('totalCustomers').textContent = allCustomers.length;
+                document.getElementById('totalPackages').textContent = new Set(allCustomers.map(c => c.packageTitle)).size;
+                document.getElementById('todayCustomers').textContent = this.getTodayCount(allCustomers);
                 
                 if (customers.length === 0) {
                     customerGrid.innerHTML = `
@@ -405,6 +420,16 @@
                 
                 // Sort by newest first
                 customers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                if (customers.length === 0 && filteredCustomers) {
+                    customerGrid.innerHTML = `
+                        <div class="no-data">
+                            <h3>No results found</h3>
+                            <p>Try adjusting your search or filter criteria</p>
+                        </div>
+                    `;
+                    return;
+                }
                 
                 customerGrid.innerHTML = customers.map(customer => `
                     <div class="customer-card" id="card-${customer.id}">
@@ -427,6 +452,7 @@
                             <button class="btn btn-edit" onclick="editCustomerPDF(${customer.id})">
                                 Edit Itinerary
                             </button>
+
                             <button class="btn btn-delete" onclick="deleteCustomer(${customer.id})">
                                 Cancel Booking
                             </button>
@@ -434,12 +460,80 @@
                     </div>
                 `).join('');
             }
+            
+            filterByDateRange(customers, range) {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                switch(range) {
+                    case 'today':
+                        return customers.filter(c => {
+                            const customerDate = new Date(c.createdAt);
+                            const customerDay = new Date(customerDate.getFullYear(), customerDate.getMonth(), customerDate.getDate());
+                            return customerDay.getTime() === today.getTime();
+                        });
+                    case '7days':
+                        const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        return customers.filter(c => new Date(c.createdAt) >= sevenDaysAgo);
+                    case '30days':
+                        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+                        return customers.filter(c => new Date(c.createdAt) >= thirtyDaysAgo);
+                    case '90days':
+                        const ninetyDaysAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+                        return customers.filter(c => new Date(c.createdAt) >= ninetyDaysAgo);
+                    case '6months':
+                        const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                        return customers.filter(c => new Date(c.createdAt) >= sixMonthsAgo);
+                    case '1year':
+                        const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                        return customers.filter(c => new Date(c.createdAt) >= oneYearAgo);
+                    default:
+                        return customers;
+                }
+            }
+            
+            searchCustomers(customers, searchTerm) {
+                if (!searchTerm) return customers;
+                
+                const term = searchTerm.toLowerCase();
+                return customers.filter(customer => 
+                    customer.customerName.toLowerCase().includes(term) ||
+                    customer.packageTitle.toLowerCase().includes(term) ||
+                    (customer.packageDetails && customer.packageDetails.price && customer.packageDetails.price.toLowerCase().includes(term)) ||
+                    (customer.hotelDetails && customer.hotelDetails.hotelName && customer.hotelDetails.hotelName.toLowerCase().includes(term))
+                );
+            }
+            
+            applyFilters() {
+                const searchTerm = document.getElementById('searchBox').value;
+                const dateRange = document.getElementById('sortFilter').value;
+                
+                let customers = this.getAllCustomers();
+                
+                // Apply date filter
+                customers = this.filterByDateRange(customers, dateRange);
+                
+                // Apply search filter
+                customers = this.searchCustomers(customers, searchTerm);
+                
+                // Load filtered results
+                this.loadDashboard(customers);
+            }
         }
         
         const dashboardManager = new DashboardManager();
         
         function loadDashboard() {
             dashboardManager.loadDashboard();
+            
+            // Add event listeners for search and sort
+            document.getElementById('searchBox').addEventListener('input', () => {
+                dashboardManager.applyFilters();
+            });
+            
+            document.getElementById('sortFilter').addEventListener('change', () => {
+                dashboardManager.applyFilters();
+            });
         }
         
         function deleteCustomer(id) {
@@ -456,6 +550,38 @@
                 const newWindow = window.open('', '_blank');
                 newWindow.document.write(customer.pdfData);
                 newWindow.document.close();
+            } else {
+                alert('Itinerary data not available for this customer');
+            }
+        }
+        
+        function downloadCustomerPDF(id) {
+            const customers = dashboardManager.getAllCustomers();
+            const customer = customers.find(c => c.id === id);
+            
+            if (customer && customer.pdfData) {
+                // Create a temporary element with the PDF content
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = customer.pdfData;
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                document.body.appendChild(tempDiv);
+                
+                // Use html2pdf to generate and download PDF
+                const options = {
+                    margin: [5, 5, 5, 5],
+                    filename: `${customer.customerName}_Itinerary.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 1.5 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                
+                html2pdf().set(options).from(tempDiv).save().then(() => {
+                    document.body.removeChild(tempDiv);
+                }).catch(() => {
+                    document.body.removeChild(tempDiv);
+                    alert('Error generating PDF. Please try again.');
+                });
             } else {
                 alert('Itinerary data not available for this customer');
             }
