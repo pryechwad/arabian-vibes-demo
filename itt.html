@@ -157,6 +157,59 @@
     input[type="file"] { display:none; }
     label.file-btn { background:#eee; color:#333; padding:6px 8px; border-radius:6px; cursor:pointer; display:inline-block; font-size:13px; }
 
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      body { margin: 10px; }
+      .page { width: 100%; padding: 15px; }
+      
+      /* Header responsive */
+      header div[style*="width:100%"] { flex-direction: column !important; gap: 15px !important; }
+      .logo-container { order: 1; }
+      .company { order: 2; text-align: center !important; }
+      #destTitle { font-size: 32px !important; }
+      
+      /* Guest details section */
+      section[style*="display:flex"] { flex-direction: column !important; }
+      div[style*="flex:0 0 450px"] { flex: none !important; width: 100% !important; }
+      div[style*="flex:1; height:253px"] { height: auto !important; margin-top: 20px; }
+      
+      /* Travel partner section */
+      .company div[style*="margin-top:10px"] { flex-direction: column !important; gap: 10px !important; }
+      
+      /* Hotel section */
+      div[style*="display:flex; align-items:flex-start; justify-content:space-between"] { flex-direction: column !important; }
+      div[style*="flex:1; min-width:300px"] { width: 100% !important; }
+      div[style*="flex:1; min-width:250px"] { width: 100% !important; margin-top: 20px; }
+      
+      /* Tables */
+      .table-container { overflow-x: auto; width: 100%; display: block; }
+      table { min-width: 600px; font-size: 11px; white-space: nowrap; display: table; width: auto; }
+      th, td { padding: 6px 3px !important; min-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      
+      /* Buttons */
+      .controls { flex-wrap: wrap; }
+      button { margin: 5px 0; font-size: 12px !important; padding: 8px 12px !important; }
+      
+      /* Similar packages */
+      div[style*="display: flex; flex-wrap: wrap"] div[style*="width: 23%"] { width: 100% !important; margin-bottom: 20px; }
+    }
+    
+    @media (max-width: 480px) {
+      .page { padding: 10px; }
+      #destTitle { font-size: 24px !important; }
+      #logoPreview { width: 150px; height: 60px; }
+      
+      /* Make inputs smaller */
+      input[type="date"], input[type="time"] { width: 90px !important; font-size: 10px !important; }
+      
+      /* Stack travel partner elements */
+      span[id="customerName"], span[id="handledBy"] { display: block !important; margin: 5px 0 !important; width: 100% !important; }
+      
+      /* Smaller table text */
+      table { font-size: 10px; }
+      th, td { padding: 4px 2px !important; }
+    }
+    
     /* Table responsive */
     .table-container {
       overflow-x: auto;
@@ -164,46 +217,7 @@
       max-width: 100%;
     }
     
-    @media (max-width:768px) {
-      .table-container {
-        overflow-x: scroll;
-        width: 100%;
-        display: block;
-      }
-      table {
-        font-size: 11px;
-        white-space: nowrap;
-        display: table;
-        width: auto;
-      }
-      th, td {
-        padding: 6px 3px !important;
-        min-width: 60px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .editHotelBtn, .deleteHotelBtn, .editTransferBtn, .deleteTransferBtn, .editItineraryBtn, .deleteItineraryBtn {
-        font-size: 12px !important;
-        padding: 1px !important;
-        margin-right: 2px !important;
-      }
-    }
-    
-    /* responsive */
-    @media (max-width:860px){
-      .page { width:96%; padding:18px; }
-      .banner { height:160px; }
-      .thumb { height:70px; }
-      .day-image { display:none; }
-      #logoPreview { width:200px; height:80px; }
-      #destTitle { font-size:36px !important; }
-    }
-    @media (max-width:600px){
-      #logoPreview { width:180px; height:70px; }
-      #destTitle { font-size:28px !important; }
-      .logo-container { margin-bottom:10px; }
-    }
+
     
     /* Notification Styles */
     .notification {

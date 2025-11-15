@@ -318,11 +318,12 @@ function addSaveButton() {
   const saveBtn = document.createElement('button');
   saveBtn.innerHTML = '💾 Save Data';
   saveBtn.id = 'floatingSaveBtn';
+  const isMobile = window.innerWidth <= 768;
   saveBtn.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #2196F3;
+    position: ${isMobile ? 'relative' : 'fixed'};
+    bottom: ${isMobile ? 'auto' : '20px'};
+    right: ${isMobile ? 'auto' : '20px'};
+    background: linear-gradient(135deg, #075056 0%, #0a6b72 100%);
     color: white;
     border: none;
     padding: 12px 20px;
@@ -330,25 +331,28 @@ function addSaveButton() {
     cursor: pointer;
     font-size: 14px;
     z-index: 1000;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     font-weight: 600;
     transition: all 0.3s ease;
+    min-width: 120px;
+    width: ${isMobile ? '100%' : 'auto'};
+    margin: ${isMobile ? '10px 0' : '0'};
   `;
   
   saveBtn.addEventListener('click', () => {
-    saveBtn.style.background = '#1976D2';
+    saveBtn.style.background = 'linear-gradient(135deg, #064449 0%, #085e65 100%)';
     autoSaveData();
     setTimeout(() => {
-      saveBtn.style.background = '#2196F3';
+      saveBtn.style.background = 'linear-gradient(135deg, #075056 0%, #0a6b72 100%)';
     }, 1000);
   });
   
   saveBtn.addEventListener('mouseenter', () => {
-    saveBtn.style.transform = 'scale(1.05)';
+    saveBtn.style.transform = 'translateY(-2px) scale(1.05)';
   });
   
   saveBtn.addEventListener('mouseleave', () => {
-    saveBtn.style.transform = 'scale(1)';
+    saveBtn.style.transform = 'translateY(0) scale(1)';
   });
   
   document.body.appendChild(saveBtn);
@@ -359,11 +363,12 @@ function addSaveButton() {
 function addDashboardButton() {
   const dashBtn = document.createElement('button');
   dashBtn.innerHTML = '📊 Dashboard';
+  const isMobile = window.innerWidth <= 768;
   dashBtn.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 140px;
-    background: #FF9800;
+    position: ${isMobile ? 'relative' : 'fixed'};
+    bottom: ${isMobile ? 'auto' : '20px'};
+    right: ${isMobile ? 'auto' : '160px'};
+    background: linear-gradient(135deg, #075056 0%, #0a6b72 100%);
     color: white;
     border: none;
     padding: 12px 20px;
@@ -371,9 +376,21 @@ function addDashboardButton() {
     cursor: pointer;
     font-size: 14px;
     z-index: 1000;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    width: ${isMobile ? '100%' : 'auto'};
+    margin: ${isMobile ? '10px 0' : '0'};
   `;
+  
+  dashBtn.addEventListener('mouseenter', () => {
+    dashBtn.style.transform = 'translateY(-2px) scale(1.05)';
+  });
+  
+  dashBtn.addEventListener('mouseleave', () => {
+    dashBtn.style.transform = 'translateY(0) scale(1)';
+  });
   
   dashBtn.addEventListener('click', () => {
     window.open('dashboard.html', '_blank');
