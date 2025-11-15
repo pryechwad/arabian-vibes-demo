@@ -205,32 +205,81 @@
       .logo-container { margin-bottom:10px; }
     }
     
+    /* Notification Styles */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      z-index: 10000;
+      min-width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .notification.show {
+      transform: translateX(0);
+    }
+    .notification.success {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      border-left: 4px solid #2E7D32;
+    }
+    .notification.error {
+      background: linear-gradient(135deg, #f44336, #d32f2f);
+      border-left: 4px solid #c62828;
+    }
+    .notification.warning {
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+      border-left: 4px solid #ef6c00;
+    }
+    .notification .icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .notification .close-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     /* PDF specific styles */
     @media print {
-      .controls, button:not(#logoPreview), input[type="file"], .file-btn { display: none !important; }
+      .controls, button:not(#logoPreview), input[type="file"], .file-btn, .notification { display: none !important; }
+      /* Fix travel partner section in PDF */
+      .company div[style*="margin-top:10px"] { gap: 5px !important; }
+      .company div[style*="margin-top:10px"] span { margin: 0 !important; }
       section:last-of-type { display: none !important; } /* Hide similar packages */
       .section { margin-bottom: 8px !important; }
       table { margin-bottom: 10px !important; }
-      th:last-child, td:last-child { display: none !important; } /* Hide Actions column */
-      #transferTable th:last-child, #transferTable td:last-child { display: none !important; } /* Hide transfer actions */
-      #transferTable th:contains('🗑️'), #transferTable td:has(button) { display: none !important; }
-      #itineraryTable th:last-child, #itineraryTable td:last-child { display: none !important; } /* Hide itinerary actions */
-      #itineraryTable { font-size: 14px !important; table-layout: auto !important; width: 100% !important; }
-      #itineraryTable th, #itineraryTable td { padding: 8px !important; font-size: 14px !important; vertical-align: top !important; word-wrap: break-word !important; }
-      #itineraryTable th:nth-child(1) { width: 8% !important; }
-      #itineraryTable th:nth-child(2) { width: 12% !important; }
-      #itineraryTable th:nth-child(3) { width: 12% !important; }
-      #itineraryTable th:nth-child(4) { width: auto !important; white-space: normal !important; min-width: 150px !important; max-width: 300px !important; }
-      #itineraryTable th:nth-child(5) { width: 12% !important; }
-      #itineraryTable th:nth-child(6) { width: 8% !important; }
-      #itineraryTable th:nth-child(7) { width: 8% !important; }
-      #itineraryTable td:nth-child(1) { width: 8% !important; }
-      #itineraryTable td:nth-child(2) { width: 12% !important; }
-      #itineraryTable td:nth-child(3) { width: 12% !important; }
-      #itineraryTable td:nth-child(4) { width: auto !important; white-space: normal !important; word-break: break-word !important; min-width: 150px !important; max-width: 300px !important; }
-      #itineraryTable td:nth-child(5) { width: 12% !important; }
-      #itineraryTable td:nth-child(6) { width: 8% !important; }
-      #itineraryTable td:nth-child(7) { width: 8% !important; word-break: break-all !important; }
+      /* Hide Actions column for hotel and transfer tables only */
+      #hotelTable th:nth-child(6), #hotelTable td:nth-child(6) { display: none !important; }
+      #transferTable th:nth-child(8), #transferTable td:nth-child(8) { display: none !important; }
+      /* Hide all buttons in PDF */
+      button { display: none !important; }
+      /* Fix table page breaks */
+      table { page-break-inside: auto !important; }
+      tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+      thead { display: table-header-group !important; }
+
+      /* Make inclusion/exclusion backgrounds faint in PDF */
+      div[style*="background:#e9f7fa"] { background: #f8fcfd !important; }
+      div[style*="background:#fdeaea"] { background: #fef8f8 !important; }
       .page { 
         padding: 10px !important;
         position: relative;
@@ -302,7 +351,7 @@
 
   <div style="max-width:1100px; width:100%;">
     <div class="controls">
-      <button id="downloadPdf">Download as PDF</button>
+      <button onclick="generatePDF()" style="background:black; color:white;">📄 Download PDF</button>
     </div>
 
     <div id="printable" class="page">
@@ -414,7 +463,7 @@
       <section class="section">
         <h3 style="font-size:24px; color:black; margin-bottom:10px;">Accommodation Details</h3>
         <div class="controls" style="margin-bottom:10px;">
-          <button id="addHotelBtn" style="background:#1e3a8a;">+ Add Hotel</button>
+          <button id="addHotelBtn" onclick="addHotel()" style="background:#1e3a8a;">+ Add Hotel</button>
         </div>
         
         <!-- Hotel Image Section -->
@@ -445,7 +494,7 @@
               <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
                 <button onclick="document.getElementById('uploadHotelImage').click()" style="background:#1e3a8a; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">📁 Upload</button>
                 <button onclick="toggleHotelLinkInput()" style="background:#075056; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🔗 Link</button>
-                <button onclick="deleteHotelLink()" style="background:#ff6b35; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️ Delete</button>
+                <button onclick="deleteHotelLink()" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️ Delete</button>
               </div>
             </div>
             
@@ -483,10 +532,10 @@
         </div>
       </section>
       <!-- Transfer Details -->
-      <section class="section" style="page-break-before: always;">
+      <section class="section">
         <h3 style="font-size:24px; color:black; margin-bottom:10px;">Transfer Details</h3>
         <div class="controls" style="margin-bottom:10px;">
-          <button id="addTransferBtn" style="background:#1e3a8a;">+ Add Transfer</button>
+          <button id="addTransferBtn" onclick="addTransfer()" style="background:#1e3a8a;">+ Add Transfer</button>
         </div>
         <div class="table-container" style="background:white; border:1px solid #1e3a8a; border-radius:8px; overflow:hidden; margin-bottom:20px;">
           <table id="transferTable" style="width:100%; border-collapse:collapse; min-width:600px;">
@@ -499,6 +548,7 @@
                 <th style="padding:12px; text-align:left; border-right:1px solid #ddd;">Flight Details</th>
                 <th style="padding:12px; text-align:left; border-right:1px solid #ddd;">Transfer Type</th>
                 <th style="padding:12px; text-align:left; border-right:1px solid #ddd;">POC (Person of Contact)</th>
+                <th style="padding:12px; text-align:left;">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -510,6 +560,7 @@
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Flight ABC123</td>
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Private</td>
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">+971-123456789</td>
+                <td style="padding:12px;"><button onclick="deleteTransferRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
               </tr>
               <tr style="border-bottom:1px solid #eee;">
                 <td style="padding:12px; border-right:1px solid #eee;"><input type="date" id="transferDate2" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px;"></td>
@@ -519,6 +570,7 @@
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Flight XYZ789</td>
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Private</td>
                 <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">+971-123456789</td>
+                <td style="padding:12px;"><button onclick="deleteTransferRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
               </tr>
             </tbody>
           </table>
@@ -529,7 +581,7 @@
       <section class="section" id="itinerarySection">
         <h3 style="font-size:24px; color:black; margin-bottom:10px;">Day-wise Itinerary</h3>
         <div class="controls" style="margin-bottom:10px;">
-          <button id="addDayBtn" style="background:#1e3a8a;">+ Add New Day</button>
+          <button id="addDayBtn" onclick="addItineraryDay()" style="background:#1e3a8a;">+ Add New Day</button>
         </div>
 
         <div id="dayContainer">
@@ -544,7 +596,8 @@
                   <th style="padding:12px; text-align:left; border-right:1px solid #ddd; width:220px;">Activity</th>
                   <th style="padding:12px; text-align:left; border-right:1px solid #ddd; width:100px;">Return Time</th>
                   <th style="padding:12px; text-align:left; border-right:1px solid #ddd; width:80px;">Vehicle</th>
-                  <th style="padding:12px; text-align:left; border-right:1px solid #ddd; width:120px;">POC</th>
+                  <th style="padding:12px; text-align:left; border-right:1px solid #ddd; width:120px;">POC (Person of Contact)</th>
+                  <th style="padding:12px; text-align:left; width:80px;">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -560,6 +613,7 @@
                   </td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">SIC</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
+                  <td style="padding:6px; text-align:center;"><button onclick="deleteItineraryRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
                 </tr>
                 <tr style="border-bottom:1px solid #eee;">
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-size:12px;">Day 2</td>
@@ -573,6 +627,7 @@
                   </td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">SIC</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
+                  <td style="padding:6px; text-align:center;"><button onclick="deleteItineraryRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
                 </tr>
                 <tr style="border-bottom:1px solid #eee;">
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-size:12px;">Day 3</td>
@@ -586,6 +641,7 @@
                   </td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">SIC</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
+                  <td style="padding:6px; text-align:center;"><button onclick="deleteItineraryRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
                 </tr>
                 <tr style="border-bottom:1px solid #eee;">
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-size:12px;">Day 4</td>
@@ -597,6 +653,7 @@
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">-</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">Private</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
+                  <td style="padding:6px; text-align:center;"><button onclick="deleteItineraryRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
                 </tr>
                 <tr style="background:#f8f9fa;">
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-style:italic; font-size:11px;">Day 4 (5D)</td>
@@ -610,6 +667,7 @@
                   </td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">SIC</td>
                   <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">+971-123456789</td>
+                  <td style="padding:6px; text-align:center;"><button onclick="deleteItineraryRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
                 </tr>
               </tbody>
             </table>
@@ -668,23 +726,7 @@
     </div>
   </div>
   
-  <!-- Input to attach link -->
-  <div id="linkSection" style="text-align:center; margin-bottom:12px;">
-    <input type="text" id="linkInput" placeholder="Enter package URL here..." 
-           style="width:70%; max-width:400px; padding:8px 10px; border:2px solid black; border-radius:6px; outline:none;">
-    <button onclick="attachPackageLink()" 
-            style="background:black; color:#fff; border:none; padding:9px 16px; border-radius:6px; margin-left:6px; cursor:pointer; font-weight:600; transition:0.3s;">
-      Attach Link
-    </button>
-  </div>
 
-  <!-- Redirect Button -->
-  <div style="text-align:center; margin-top:10px;">
-    <a id="packageLink" href="#" target="_blank"
-       style="background:linear-gradient(135deg, black, #0d4b80); color:#fff; padding:10px 26px; border-radius:8px; text-decoration:none; font-weight:600; letter-spacing:0.5px; box-shadow:0 3px 8px rgba(27,108,168,0.3); transition:0.3s;">
-      View Full Package
-    </a>
-  </div>
 </section>
 
 
@@ -1050,388 +1092,264 @@
     handleImageUpload(document.getElementById('dayImgUpload2'), 'dayImg2');
     handleImageUpload(document.getElementById('logoUpload'), 'logoPreview');
 
-    // DOWNLOAD PDF
-    document.getElementById('downloadPdf').addEventListener('click', () => {
-      try {
-        const element = document.getElementById('printable');
+    // Proper PDF generation function
+    function generatePDF() {
+      const element = document.getElementById('printable');
+      const customerName = document.getElementById('customerName')?.innerText?.trim() || 'Customer';
+      const cleanName = customerName.replace(/[^a-zA-Z0-9]/g, '_');
+      
+      // Set white background
+      element.style.background = 'white';
+      element.style.backgroundColor = 'white';
+      
+      // Hide unwanted sections
+      const hideElements = document.querySelectorAll('.controls, button, input[type="file"], [onclick], section[style*="padding: 0px 0; background: #f8fbfc"], #packageLink, #linkSection');
+      hideElements.forEach(el => el.style.display = 'none');
+      
+      // Hide View Package elements specifically
+      const viewPackageElements = element.querySelectorAll('a[id*="packageLink"], div[id*="linkSection"]');
+      viewPackageElements.forEach(el => el.style.display = 'none');
+      
+      // Hide ALL hotel image sections in PDF - only show table
+      const hotelImageSections = element.querySelectorAll('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
+      hotelImageSections.forEach(section => {
+        section.style.display = 'none'; // Hide all hotel image sections
+      });
+      
+      // Also hide any additional hotel sections
+      const allHotelSections = element.querySelectorAll('div[id*="hotelSection"]');
+      allHotelSections.forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show and fix hotel table with proper data
+      const hotelTable = document.getElementById('hotelTableContainer');
+      if (hotelTable) {
+        hotelTable.style.display = 'block';
+        hotelTable.style.width = '100%';
+        hotelTable.style.overflow = 'visible';
         
-        if (!element) {
-          alert('Printable element not found!');
-          return;
+        const table = hotelTable.querySelector('table');
+        if (table) {
+          table.style.width = '100%';
+          table.style.fontSize = '12px';
+          table.style.tableLayout = 'fixed';
         }
         
-        // Hide only interactive elements for PDF and show hotel table
-        const controls = document.querySelectorAll('.controls, #addDayBtn, #addHotelBtn, #addTransferBtn, .deleteHotelBtn, .deleteTransferBtn, .deleteItineraryBtn, .editHotelBtn, .editTransferBtn, .editItineraryBtn, .editCustomerBtn, .deleteCustomerBtn, #linkSection, #linkSection1, #linkSection2, #hotelLinkSection, input[type="file"], button:not(#logoPreview), .file-btn, [onclick]:not(img)');
-        controls.forEach(btn => {
-          if (btn) btn.style.display = 'none';
-        });
-        
-        // Convert all date and time inputs to text for PDF
-        const travelDateInput = element.querySelector('#travelDate');
-        if (travelDateInput && travelDateInput.value) {
-          const dateText = new Date(travelDateInput.value).toLocaleDateString('en-GB');
-          const textSpan = document.createElement('span');
-          textSpan.textContent = dateText;
-          textSpan.style.cssText = 'font-size:14px; color:#075056; font-weight:600;';
-          textSpan.id = 'travelDateText';
-          travelDateInput.parentNode.replaceChild(textSpan, travelDateInput);
-        }
-        
-        // Convert all date inputs in tables to text
-        const dateInputs = element.querySelectorAll('input[type="date"]');
-        dateInputs.forEach((input, index) => {
-          if (input.value) {
-            const dateText = new Date(input.value).toLocaleDateString('en-GB');
-            const textSpan = document.createElement('span');
-            textSpan.textContent = dateText;
-            textSpan.style.cssText = 'font-size:9px; color:#333;';
-            textSpan.className = 'pdf-date-text';
-            input.parentNode.replaceChild(textSpan, input);
-          }
-        });
-        
-        // Convert all time inputs in tables to text
-        const timeInputs = element.querySelectorAll('input[type="time"]');
-        timeInputs.forEach((input, index) => {
-          if (input.value) {
-            const textSpan = document.createElement('span');
-            textSpan.textContent = input.value;
-            textSpan.style.cssText = 'font-size:9px; color:#333;';
-            textSpan.className = 'pdf-time-text';
-            input.parentNode.replaceChild(textSpan, input);
-          }
-        });
-        
-        // Modify itinerary table for PDF
-        const itineraryTable = element.querySelector('#itineraryTable');
-        if (itineraryTable) {
-          itineraryTable.style.fontSize = '8px';
-          itineraryTable.style.tableLayout = 'fixed';
+        // Populate with current hotel data
+        const tbody = hotelTable.querySelector('tbody');
+        if (tbody) {
+          const checkinDate = element.querySelector('#checkinDate')?.value;
+          const checkinTime = element.querySelector('#checkinTime')?.value || '15:00';
+          const checkoutDate = element.querySelector('#checkoutDate')?.value;
+          const checkoutTime = element.querySelector('#checkoutTime')?.value || '12:00';
           
-          const headers = itineraryTable.querySelectorAll('th');
-          const cells = itineraryTable.querySelectorAll('td');
+          // Convert times to 12-hour format with AM/PM
+          const formatTime = (time24) => {
+            if (!time24) return time24;
+            const [hours, minutes] = time24.split(':');
+            const hour12 = hours % 12 || 12;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            return `${hour12}:${minutes} ${ampm}`;
+          };
           
-          headers.forEach(th => {
-            th.style.padding = '3px';
-            th.style.fontSize = '8px';
-          });
+          const checkinTimeFormatted = formatTime(checkinTime || '15:00');
+          const checkoutTimeFormatted = formatTime(checkoutTime || '12:00');
           
-          cells.forEach(td => {
-            td.style.padding = '3px';
-            td.style.fontSize = '8px';
-          });
+          const checkinDisplay = checkinDate ? `${new Date(checkinDate).toLocaleDateString('en-GB')} ${checkinTimeFormatted}` : `01/01/2025 3:00 PM`;
+          const checkoutDisplay = checkoutDate ? `${new Date(checkoutDate).toLocaleDateString('en-GB')} ${checkoutTimeFormatted}` : `04/01/2025 12:00 PM`;
           
-          // Set column widths
-          if (headers.length >= 7) {
-            headers[0].style.width = '5%'; // Day
-            headers[1].style.width = '5%'; // Date
-            headers[2].style.width = '5%'; // Pickup
-            headers[3].style.width = '50%'; // Activity
-            headers[4].style.width = '5%'; // Return
-            headers[5].style.width = '8%'; // Vehicle
-            headers[6].style.width = '22%'; // POC
-            
-            headers[2].innerHTML = 'Pickup<br>Time';
-            headers[4].innerHTML = 'Return<br>Time';
-          }
-        }
-        
-        // Show hotel table in PDF and hide image layout
-        const hotelTableContainer = document.getElementById('hotelTableContainer');
-        if (hotelTableContainer) hotelTableContainer.style.display = 'block';
-        
-        // Hide hotel image sections for PDF
-        const hotelImageSections = element.querySelectorAll('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
-        hotelImageSections.forEach(section => {
-          if (section.querySelector('h2') && section.querySelector('img')) {
-            section.style.display = 'none';
-          }
-        });
-        
-        // Populate hotel table with current data
-        const hotelTable = element.querySelector('#hotelTable tbody');
-        if (hotelTable) {
-          // Clear existing rows
-          hotelTable.innerHTML = '';
-          
-          // Get hotel data from the form
-          const hotelName = element.querySelector('h2[contenteditable="true"]')?.textContent || 'Dubai Hotel or Similar 3-Star';
-          const checkinDate = element.querySelector('#checkinDate')?.value || 'Day 1';
-          const checkoutDate = element.querySelector('#checkoutDate')?.value || 'Day 4';
-          const roomType = element.querySelector('span[contenteditable="true"]')?.textContent || 'Standard Room';
-          const mealPlan = element.querySelectorAll('span[contenteditable="true"]')[2]?.textContent || 'Breakfast';
-          
-          // Create table row
-          const row = document.createElement('tr');
-          row.style.borderBottom = '1px solid #eee';
-          row.innerHTML = `
-            <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${hotelName}</td>
-            <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${checkinDate ? new Date(checkinDate).toLocaleDateString('en-GB') : 'Day 1'}</td>
-            <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${checkoutDate ? new Date(checkoutDate).toLocaleDateString('en-GB') : 'Day 4'}</td>
-            <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${roomType}</td>
-            <td style="padding:8px; font-size:12px;">${mealPlan}</td>
+          tbody.innerHTML = `
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">Guest Details</td>
+              <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${checkinDisplay}</td>
+              <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${checkoutDisplay}</td>
+              <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">Standard Room</td>
+              <td style="padding:8px; font-size:12px;">Breakfast Included</td>
+            </tr>
           `;
-          hotelTable.appendChild(row);
         }
-        
-        // Hide similar packages section and View Full Package button
-        const similarSection = document.querySelector('section[style*="padding: 0px 0; background: #f8fbfc"]');
-        if (similarSection) similarSection.style.display = 'none';
-        
-        // Hide View Full Package button
-        const viewPackageBtn = element.querySelector('#packageLink');
-        if (viewPackageBtn) viewPackageBtn.style.display = 'none';
-        
-        // Hide Actions column in all tables
-        const actionHeaders = element.querySelectorAll('th:last-child');
-        const actionCells = element.querySelectorAll('td:last-child');
-        actionHeaders.forEach(th => {
-          if (th.textContent.includes('Actions')) th.style.display = 'none';
-        });
-        actionCells.forEach(td => {
-          if (td.querySelector('button')) td.style.display = 'none';
-        });
-        
-        // Reduce spacing and margins
-        const sections = element.querySelectorAll('.section');
-        sections.forEach(section => {
-          section.style.marginBottom = '8px';
-        });
-        
-        // Remove external background images to avoid CORS issues
-        element.style.backgroundColor = '#f8f9fa';
-        element.style.backgroundImage = 'none';
-        
-        // Add PDF header with logo and TRAVEL ITINERARY
-        const pdfHeader = document.createElement('div');
-        pdfHeader.id = 'pdfHeader';
-        pdfHeader.style.cssText = 'position: absolute; top: 15px; left: 0; right: 0; display: flex; justify-content: center; align-items: center; padding: 0 20px; z-index: 1000;';
-        
-        const logoContainer = element.querySelector('.logo-container');
-        if (logoContainer) {
-          const logoImg = logoContainer.querySelector('#logoPreview');
-          if (logoImg && logoImg.src) {
-            const pdfLogo = document.createElement('img');
-            pdfLogo.src = logoImg.src;
-            pdfLogo.style.cssText = 'width: 220px; height: 100px; object-fit: contain; position: absolute; left: 20px;';
-            pdfHeader.appendChild(pdfLogo);
-          }
-        }
-        
-        const logoSpacer = document.createElement('div');
-        logoSpacer.style.cssText = 'width: 180px;';
-        pdfHeader.appendChild(logoSpacer);
-        
-
-        
-        const rightSpacer = document.createElement('div');
-        rightSpacer.style.cssText = 'width: 180px;';
-        pdfHeader.appendChild(rightSpacer);
-        
-        element.insertBefore(pdfHeader, element.firstChild);
-        
-        // Add top padding to content
-        element.style.paddingTop = '100px';
-        
-        // Fix customer name display in PDF
-        const customerNameElement = element.querySelector('#customerName');
-        if (customerNameElement) {
-          customerNameElement.style.textAlign = 'center';
-          customerNameElement.style.fontSize = '18px';
-          customerNameElement.style.fontWeight = 'bold';
-          customerNameElement.style.margin = '20px auto';
-          customerNameElement.style.display = 'block';
-          customerNameElement.style.border = 'none';
-          customerNameElement.style.background = 'transparent';
-          customerNameElement.style.boxShadow = 'none';
-          customerNameElement.style.padding = '10px';
-          customerNameElement.style.color = '#000';
-        }
-        
-        // Fix Additional Details text wrapping
-        const additionalDetails = element.querySelector('div[contenteditable="true"][style*="text-align:justify"]');
-        if (additionalDetails) {
-          additionalDetails.style.fontSize = '12px';
-          additionalDetails.style.lineHeight = '1.4';
-          additionalDetails.style.wordWrap = 'break-word';
-          additionalDetails.style.whiteSpace = 'normal';
-        }
-        
-        // Add thank you message at the very end
-        const thankYouDiv = document.createElement('div');
-        thankYouDiv.id = 'pdfThankYou';
-        thankYouDiv.style.cssText = 'text-align:center; margin-top:30px; padding:20px; border-top:2px solid #075056; font-size:18px; color:#075056; font-weight:bold; page-break-inside:avoid;';
-        thankYouDiv.textContent = 'Thank you for choosing us for your travel needs!';
-        element.appendChild(thankYouDiv);
-        
-
-        
-        const options = {
-          margin: [5, 5, 5, 5],
-          filename: 'Dubai-Package-Itinerary.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { 
-            scale: 1.5,
-            useCORS: false,
-            allowTaint: false,
-            scrollX: 0,
-            scrollY: 0,
-            width: 800,
-            height: element.scrollHeight,
-            imageTimeout: 15000,
-            logging: false
-          },
-          jsPDF: { 
-            unit: 'mm', 
-            format: 'a4', 
-            orientation: 'portrait'
-          }
-        };
-        
-        html2pdf().set(options).from(element).save().then(() => {
-          // Restore all elements
-          controls.forEach(btn => {
-            if (btn) btn.style.display = '';
-          });
-          
-          // Restore hotel image sections
-          const hotelImageSections = element.querySelectorAll('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
-          hotelImageSections.forEach(section => {
-            if (section.querySelector('h2') && section.querySelector('img')) {
-              section.style.display = 'flex';
-            }
-          });
-          
-          // Restore travel date input
-          const travelDateSpan = element.querySelector('#travelDateText');
-          if (travelDateSpan && travelDateSpan.parentNode) {
-            const newInput = document.createElement('input');
-            newInput.type = 'date';
-            newInput.id = 'travelDate';
-            newInput.style.cssText = 'padding:6px 8px; border:2px solid #075056; border-radius:4px; font-size:12px; width:140px;';
-            travelDateSpan.parentNode.replaceChild(newInput, travelDateSpan);
-          }
-          
-          // Restore all date inputs
-          const dateTexts = element.querySelectorAll('.pdf-date-text');
-          dateTexts.forEach(span => {
-            const newInput = document.createElement('input');
-            newInput.type = 'date';
-            newInput.style.cssText = 'padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px;';
-            span.parentNode.replaceChild(newInput, span);
-          });
-          
-          // Restore all time inputs
-          const timeTexts = element.querySelectorAll('.pdf-time-text');
-          timeTexts.forEach(span => {
-            const newInput = document.createElement('input');
-            newInput.type = 'time';
-            newInput.style.cssText = 'padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;';
-            span.parentNode.replaceChild(newInput, span);
-          });
-          
-          // Restore original table headers
-          const itineraryHeaders = element.querySelectorAll('#itineraryTable th');
-          if (itineraryHeaders.length >= 7) {
-            itineraryHeaders[2].innerHTML = 'Pickup Time';
-            itineraryHeaders[4].innerHTML = 'Return Time';
-          }
-          
-          if (similarSection) similarSection.style.display = '';
-          // Hide hotel table again
-          if (hotelTableContainer) hotelTableContainer.style.display = 'none';
-          // Restore View Full Package button
-          const viewPackageBtn = element.querySelector('#packageLink');
-          if (viewPackageBtn) viewPackageBtn.style.display = '';
-          actionHeaders.forEach(th => th.style.display = '');
-          actionCells.forEach(td => td.style.display = '');
-          sections.forEach(section => {
-            section.style.marginBottom = '';
-          });
-          // Remove PDF header and restore styles
-          const pdfHeader = element.querySelector('#pdfHeader');
-          if (pdfHeader && pdfHeader.parentNode) pdfHeader.parentNode.removeChild(pdfHeader);
-          element.style.paddingTop = '';
-          // Reset background
-          element.style.backgroundImage = '';
-          element.style.backgroundSize = '';
-          element.style.backgroundPosition = '';
-          element.style.backgroundAttachment = '';
-          // Restore customer name styles
-          if (customerNameElement) {
-            customerNameElement.style.textAlign = '';
-            customerNameElement.style.fontSize = '';
-            customerNameElement.style.fontWeight = '';
-            customerNameElement.style.margin = '';
-            customerNameElement.style.display = '';
-            customerNameElement.style.border = '';
-            customerNameElement.style.background = '';
-            customerNameElement.style.boxShadow = '';
-            customerNameElement.style.padding = '';
-            customerNameElement.style.color = '';
-          }
-          // Remove thank you message
-          const thankYouDiv = element.querySelector('#pdfThankYou');
-          if (thankYouDiv && thankYouDiv.parentNode) thankYouDiv.parentNode.removeChild(thankYouDiv);
-          console.log('PDF generated successfully');
-        }).catch((error) => {
-          console.error('PDF generation error:', error);
-          // Restore all elements
-          controls.forEach(btn => {
-            if (btn) btn.style.display = '';
-          });
-          
-          // Restore hotel image sections
-          const hotelImageSections = element.querySelectorAll('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
-          hotelImageSections.forEach(section => {
-            if (section.querySelector('h2') && section.querySelector('img')) {
-              section.style.display = 'flex';
-            }
-          });
-          if (similarSection) similarSection.style.display = '';
-          // Hide hotel table again
-          if (hotelTableContainer) hotelTableContainer.style.display = 'none';
-          // Restore View Full Package button
-          const viewPackageBtn = element.querySelector('#packageLink');
-          if (viewPackageBtn) viewPackageBtn.style.display = '';
-          actionHeaders.forEach(th => th.style.display = '');
-          actionCells.forEach(td => td.style.display = '');
-          sections.forEach(section => {
-            section.style.marginBottom = '';
-          });
-          // Remove PDF header and restore styles
-          const pdfHeader = element.querySelector('#pdfHeader');
-          if (pdfHeader && pdfHeader.parentNode) pdfHeader.parentNode.removeChild(pdfHeader);
-          element.style.paddingTop = '';
-          // Reset background
-          element.style.backgroundImage = '';
-          element.style.backgroundSize = '';
-          element.style.backgroundPosition = '';
-          element.style.backgroundAttachment = '';
-          // Restore customer name styles
-          if (customerNameElement) {
-            customerNameElement.style.textAlign = '';
-            customerNameElement.style.fontSize = '';
-            customerNameElement.style.fontWeight = '';
-            customerNameElement.style.margin = '';
-            customerNameElement.style.display = '';
-            customerNameElement.style.border = '';
-            customerNameElement.style.background = '';
-            customerNameElement.style.boxShadow = '';
-            customerNameElement.style.padding = '';
-            customerNameElement.style.color = '';
-          }
-          // Remove thank you message
-          const thankYouDiv = element.querySelector('#pdfThankYou');
-          if (thankYouDiv && thankYouDiv.parentNode) thankYouDiv.parentNode.removeChild(thankYouDiv);
-          alert('PDF generation failed: ' + error.message);
-        });
-        
-      } catch (error) {
-        console.error('PDF Error:', error);
-        alert('PDF generation failed. Error: ' + error.message);
       }
-    });
+      
+      // Fix all tables for PDF
+      const allTables = element.querySelectorAll('table');
+      allTables.forEach(table => {
+        table.style.width = '100%';
+        table.style.fontSize = '12px';
+        table.style.tableLayout = 'fixed';
+        table.style.wordWrap = 'break-word';
+        
+        // Skip itinerary table processing - let it show naturally
+        if (table.id !== 'itineraryTable') {
+          // Hide action columns completely
+          if (table.id === 'hotelTable') {
+            const actionHeaders = table.querySelectorAll('th:nth-child(6)');
+            const actionCells = table.querySelectorAll('td:nth-child(6)');
+            actionHeaders.forEach(th => th.style.display = 'none');
+            actionCells.forEach(td => td.style.display = 'none');
+          } else if (table.id === 'transferTable') {
+            const actionHeaders = table.querySelectorAll('th:nth-child(8)');
+            const actionCells = table.querySelectorAll('td:nth-child(8)');
+            actionHeaders.forEach(th => th.style.display = 'none');
+            actionCells.forEach(td => td.style.display = 'none');
+          }
+        }
+        
+        const cells = table.querySelectorAll('td, th');
+        cells.forEach(cell => {
+          cell.style.fontSize = '12px';
+          cell.style.padding = '6px';
+          cell.style.wordWrap = 'break-word';
+          cell.style.overflow = 'hidden';
+        });
+      });
+      
+      // Make itinerary table bigger and more readable in PDF
+      const itineraryTable = element.querySelector('#itineraryTable');
+      if (itineraryTable) {
+        // Bigger table styling for PDF
+        itineraryTable.style.cssText = 'width: 100% !important; font-size: 12px !important; table-layout: auto !important; border-collapse: collapse !important;';
+        
+        // Hide only Actions column, make others bigger
+        const rows = itineraryTable.querySelectorAll('tr');
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('th, td');
+          cells.forEach((cell, index) => {
+            if (index === 7) {
+              cell.style.display = 'none'; // Hide Actions only
+            } else {
+              cell.style.fontSize = '12px';
+              cell.style.padding = '6px';
+              cell.style.border = '1px solid #ddd';
+              cell.style.wordWrap = 'break-word';
+              cell.style.verticalAlign = 'top';
+              cell.style.lineHeight = '1.3';
+            }
+          });
+        });
+      }
+      
+      // Fix guest details section - make travel date inline
+      const guestDetailsSection = element.querySelector('div[style*="height:253px"]');
+      if (guestDetailsSection) {
+        // Make travel date inline
+        const travelDateDiv = guestDetailsSection.querySelector('div[style*="margin:0 0 12px 0"]');
+        if (travelDateDiv && travelDateDiv.querySelector('input[type="date"]')) {
+          const label = travelDateDiv.querySelector('label');
+          const input = travelDateDiv.querySelector('input[type="date"]');
+          if (label && input) {
+            travelDateDiv.style.cssText = 'margin:0 0 12px 0; display:flex; align-items:center; gap:8px;';
+            label.style.cssText = 'font-size:13px; color:black; font-weight:bold; margin:0;';
+          }
+        }
+      }
+      
+      // Reduce space between price and travel partner sections
+      const priceSection = element.querySelector('div[style*="font-size:15px"]');
+      if (priceSection && priceSection.textContent.includes('Price:')) {
+        priceSection.style.marginBottom = '5px';
+      }
+      
+      // Fix travel partner section spacing in PDF
+      const travelPartnerSection = element.querySelector('.company div[style*="margin-top:10px"]');
+      if (travelPartnerSection) {
+        travelPartnerSection.style.cssText = 'margin-top:5px; display:flex; align-items:center; gap:8px; flex-wrap:nowrap; font-size:14px;';
+        
+        // Hide edit/delete buttons in PDF
+        const buttons = travelPartnerSection.querySelectorAll('button');
+        buttons.forEach(btn => btn.style.display = 'none');
+      }
+      
+      // Convert inputs to text
+      const dateInputs = element.querySelectorAll('input[type="date"]');
+      dateInputs.forEach(input => {
+        if (input.value) {
+          const span = document.createElement('span');
+          span.textContent = new Date(input.value).toLocaleDateString('en-GB');
+          span.style.cssText = 'font-size:12px; color:#333;';
+          input.parentNode.replaceChild(span, input);
+        }
+      });
+      
+      const timeInputs = element.querySelectorAll('input[type="time"]');
+      timeInputs.forEach(input => {
+        if (input.value) {
+          const span = document.createElement('span');
+          // Convert 24-hour to 12-hour format with AM/PM
+          const time24 = input.value;
+          const [hours, minutes] = time24.split(':');
+          const hour12 = hours % 12 || 12;
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          span.textContent = `${hour12}:${minutes} ${ampm}`;
+          span.style.cssText = 'font-size:12px; color:#333;';
+          input.parentNode.replaceChild(span, input);
+        }
+      });
+      
+      // Fix images for PDF
+      const images = element.querySelectorAll('img');
+      images.forEach(img => {
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.display = 'block';
+      });
+      
+      // Remove any remaining View Package elements
+      const remainingViewElements = element.querySelectorAll('*');
+      remainingViewElements.forEach(el => {
+        if (el.textContent && el.textContent.includes('View Full Package')) {
+          el.style.display = 'none';
+        }
+      });
+      
+      // Fix header layout for PDF - logo and Dubai on same line
+      const header = element.querySelector('header');
+      if (header) {
+        const headerDiv = header.querySelector('div[style*="width:100%"]');
+        if (headerDiv) {
+          headerDiv.style.cssText = 'width:100%; display:flex; align-items:center; justify-content:space-between; flex-wrap:nowrap; gap:20px;';
+          
+          const logoContainer = headerDiv.querySelector('.logo-container');
+          const companyDiv = headerDiv.querySelector('.company');
+          
+          if (logoContainer) {
+            logoContainer.style.cssText = 'flex:0 0 auto;';
+          }
+          if (companyDiv) {
+            companyDiv.style.cssText = 'flex:1; text-align:right;';
+          }
+        }
+      }
+      
+      // Add thank you message after Additional Details
+      const additionalDetails = element.querySelector('div[contenteditable="true"][style*="text-align:justify"]');
+      if (additionalDetails && additionalDetails.parentNode) {
+        const thankYou = document.createElement('div');
+        thankYou.innerHTML = '<div style="text-align:center; margin-top:20px; padding:15px; border-top:2px solid #075056; font-size:14px; color:#075056; font-weight:bold; background:white;">Thank you for choosing us for your travel needs!</div>';
+        additionalDetails.parentNode.insertAdjacentElement('afterend', thankYou);
+      }
+      
+      const options = {
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: `${cleanName}_Dubai_Itinerary.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { 
+          scale: 1.0,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: 'white',
+          width: 800,
+          height: element.scrollHeight,
+          scrollX: 0,
+          scrollY: 0
+        },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      
+      html2pdf().set(options).from(element).save().then(() => {
+        location.reload();
+      });
+    }
 
     // Itinerary add / delete logic
     const addDayBtn = document.getElementById("addDayBtn");
@@ -1461,40 +1379,14 @@
       return newRow;
     }
 
-    addDayBtn.addEventListener("click", () => {
-      const tbody = document.querySelector('#dayContainer table tbody');
-      const dayCount = tbody.children.length + 1;
-      const newRow = createDayBlock(`Day ${dayCount}`);
-      tbody.appendChild(newRow);
-
-      // attach delete handler to newly added delete button
-      const delBtn = newRow.querySelector(".deleteItineraryBtn");
-      delBtn.addEventListener("click", (e) => {
-        if (confirm("Delete this day?")) {
-          newRow.remove();
-        }
-      });
-      
-      // attach edit handler
-      const editBtn = newRow.querySelector(".editItineraryBtn");
-      editBtn.addEventListener("click", (e) => {
-        const row = e.target.closest("tr");
-        const cells = row.querySelectorAll("td[contenteditable]");
-        cells.forEach(cell => {
-          cell.focus();
-          cell.style.background = "#fffbe6";
-        });
-        setTimeout(() => {
-          cells.forEach(cell => cell.style.background = "");
-        }, 2000);
-      });
-    });
+    // Remove duplicate - using the function defined above
 
     // Enable Delete for initial itinerary blocks
     document.querySelectorAll(".deleteItineraryBtn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         if (confirm("Delete this day?")) {
           e.target.closest("tr").remove();
+          showNotification('Itinerary day deleted successfully!', 'success');
         }
       });
     });
@@ -1514,155 +1406,25 @@
       });
     });
 
-    // Add Hotel functionality
-    const addHotelBtn = document.getElementById("addHotelBtn");
-    addHotelBtn.addEventListener("click", () => {
-      const hotelCount = document.querySelectorAll('#hotelTable tbody tr').length + 1;
-      const uniqueId = 'hotel' + hotelCount + '_' + Date.now();
-      
-      // Create new hotel image section
-      const hotelImageSection = document.createElement('div');
-      hotelImageSection.id = 'hotelSection' + uniqueId;
-      hotelImageSection.style.cssText = 'display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:20px; margin-bottom:20px;';
-      
-      hotelImageSection.innerHTML = `
-        <!-- Left: Hotel Image with Title -->
-        <div style="flex:1; min-width:300px; max-width:450px;">
-          <h2 contenteditable="true" style="font-size:24px; color:black; margin:0 0 10px 0;">Hotel ${hotelCount}</h2>
-          <div style="position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:16px; border:2px solid #07505640; cursor:pointer;" onclick="document.getElementById('upload${uniqueId}').click()">
-            <img id="img${uniqueId}" src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg" alt="Hotel Image" style="width:100%; height:100%; object-fit:cover;">
-            <input type="file" id="upload${uniqueId}" accept="image/*" style="display:none">
-          </div>
-        </div>
-        
-        <!-- Right: Hotel Info -->
-        <div style="flex:1; min-width:250px; display:flex; flex-direction:column; justify-content:flex-start;">
-          <div style="font-size:14px; color:#075056; line-height:1.4; margin-top:44px;">
-            <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Category:</strong> <span contenteditable="true">3-Star Standard</span></div>
-            <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Room Type:</strong> <span contenteditable="true">Standard Double/Twin Room</span></div>
-            <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Meal Plan:</strong> <span contenteditable="true">Breakfast Included</span></div>
-            
-            <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Check-in:</strong> <input type="date" id="checkinDate${uniqueId}" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px; margin-right:5px;"> <input type="time" id="checkinTime${uniqueId}" value="14:00" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;" step="60"></div>
-            <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Check-out:</strong> <input type="date" id="checkoutDate${uniqueId}" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px; margin-right:5px;"> <input type="time" id="checkoutTime${uniqueId}" value="12:00" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;" step="60"></div>
-            
-            <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Reference No.:</strong> <span id="bookingRef${uniqueId}" contenteditable="true" style="background:#f0f8ff; padding:2px 6px; border-radius:3px;">BK-2024-${Math.floor(Math.random() * 9000) + 1000}</span></div>
-            
-            <!-- Hotel Image Options -->
-            <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-              <button onclick="document.getElementById('upload${uniqueId}').click()" style="background:#1e3a8a; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">📁 Upload</button>
-              <button onclick="toggleNewHotelLink('link${uniqueId}')" style="background:#075056; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🔗 Link</button>
-              <button onclick="deleteHotelSection('${uniqueId}')" style="background:#ff6b35; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️ Delete</button>
-            </div>
-          </div>
-          
-          <div id="link${uniqueId}" style="display:none; margin-top:8px;">
-            <input type="text" id="linkInput${uniqueId}" placeholder="Enter hotel image URL..." style="width:70%; padding:4px; border:1px solid #ddd; border-radius:4px; font-size:11px;">
-            <button onclick="setNewHotelImage('linkInput${uniqueId}', 'img${uniqueId}', 'link${uniqueId}')" style="background:#075056; color:white; border:none; padding:4px 8px; border-radius:4px; margin-left:3px; cursor:pointer; font-size:11px;">Set</button>
-          </div>
-        </div>
-      `;
-      
-      // Insert before the table
-      const tableContainer = document.querySelector('.table-container');
-      tableContainer.parentNode.insertBefore(hotelImageSection, tableContainer);
-      
-      // Add image upload functionality
-      const uploadInput = document.getElementById('upload' + uniqueId);
-      uploadInput.addEventListener('change', function(event) {
-        const reader = new FileReader();
-        reader.onload = function() {
-          document.getElementById('img' + uniqueId).src = reader.result;
-        };
-        reader.readAsDataURL(event.target.files[0]);
-      });
-      
-      // Add table row
-      const tbody = document.querySelector('#hotelTable tbody');
-      const newRow = document.createElement('tr');
-      newRow.style.borderBottom = '1px solid #eee';
-      newRow.dataset.hotelId = uniqueId;
-      
-      newRow.innerHTML = `
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Enter Hotel Name</td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Check-In Date</td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Check-Out Date</td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Room Type</td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Meal Plan</td>
-        <td style="padding:12px;"><button class="editHotelBtn" style="background:transparent; color:#0288d1; border:none; padding:4px; cursor:pointer; font-size:16px; margin-right:8px;">✏️</button><button class="deleteHotelBtn" style="background:transparent; color:#d32f2f; border:none; padding:4px; cursor:pointer; font-size:16px;">🗑️</button></td>
-      `;
-      
-      tbody.appendChild(newRow);
-      
-      // Add delete and edit functionality to new row
-      const delBtn = newRow.querySelector(".deleteHotelBtn");
-      delBtn.addEventListener("click", (e) => {
-        if (confirm("Delete this hotel?")) {
-          hotelImageSection.remove();
-          newRow.remove();
-        }
-      });
-      
-      const editBtn = newRow.querySelector(".editHotelBtn");
-      editBtn.addEventListener("click", (e) => {
-        const row = e.target.closest("tr");
-        const cells = row.querySelectorAll("td[contenteditable]");
-        cells.forEach(cell => {
-          cell.focus();
-          cell.style.background = "#fffbe6";
-        });
-        setTimeout(() => {
-          cells.forEach(cell => cell.style.background = "");
-        }, 2000);
-      });
-    });
+    // Connect buttons to functions
+    if (document.getElementById("addHotelBtn")) {
+      document.getElementById("addHotelBtn").onclick = addHotel;
+    }
 
-    // Add Transfer functionality
-    const addTransferBtn = document.getElementById("addTransferBtn");
-    addTransferBtn.addEventListener("click", () => {
-      const tbody = document.querySelector('#transferTable tbody');
-      const newRow = document.createElement('tr');
-      newRow.style.borderBottom = '1px solid #eee';
-      
-      newRow.innerHTML = `
-        <td style="padding:12px; border-right:1px solid #eee;"><input type="date" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px;" value="${new Date().toISOString().split('T')[0]}"></td>
-        <td style="padding:12px; border-right:1px solid #eee;"><input type="time" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;" value="12:00"></td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Pick Up Location</td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Return Location</td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Flight Details</td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Transfer Type</td>
-        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">POC Number</td>
-        <td style="padding:6px; text-align:center;"><button class="deleteTransferBtn" style="background:transparent; color:#d32f2f; border:none; padding:1px; cursor:pointer; font-size:10px;">🗑️</button></td>
-      `;
-      
-      tbody.appendChild(newRow);
-      
-      // Add delete and edit functionality to new row
-      const delBtn = newRow.querySelector(".deleteTransferBtn");
-      delBtn.addEventListener("click", (e) => {
-        if (confirm("Delete this transfer?")) {
-          newRow.remove();
-        }
-      });
-      
-      const editBtn = newRow.querySelector(".editTransferBtn");
-      editBtn.addEventListener("click", (e) => {
-        const row = e.target.closest("tr");
-        const cells = row.querySelectorAll("td[contenteditable]");
-        cells.forEach(cell => {
-          cell.focus();
-          cell.style.background = "#fffbe6";
-        });
-        setTimeout(() => {
-          cells.forEach(cell => cell.style.background = "");
-        }, 2000);
-      });
-    });
+    if (document.getElementById("addTransferBtn")) {
+      document.getElementById("addTransferBtn").onclick = addTransfer;
+    }
+
+    if (addDayBtn) {
+      addDayBtn.onclick = addItineraryDay;
+    }
 
     // Enable Delete for existing Hotel and Transfer rows
     document.querySelectorAll(".deleteHotelBtn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         if (confirm("Delete this hotel?")) {
           e.target.closest("tr").remove();
+          showNotification('Hotel deleted successfully!', 'success');
         }
       });
     });
@@ -1671,6 +1433,7 @@
       btn.addEventListener("click", (e) => {
         if (confirm("Delete this transfer?")) {
           e.target.closest("tr").remove();
+          showNotification('Transfer deleted successfully!', 'success');
         }
       });
     });
@@ -1705,51 +1468,91 @@
       });
     });
 
-    // File inputs (banner/thumbs/day1/day2)
-    document.getElementById('bannerUpload').addEventListener('change', function(){
-      const f = this.files && this.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = (e) => document.getElementById('bannerImg').src = e.target.result;
-      r.readAsDataURL(f);
-    });
-    document.getElementById('thumb1Upload').addEventListener('change', function(){
-      const f = this.files && this.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = (e) => document.getElementById('thumb1').src = e.target.result;
-      r.readAsDataURL(f);
-    });
-    document.getElementById('thumb2Upload').addEventListener('change', function(){
-      const f = this.files && this.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = (e) => document.getElementById('thumb2').src = e.target.result;
-      r.readAsDataURL(f);
-    });
-    document.getElementById('thumb3Upload').addEventListener('change', function(){
-      const f = this.files && this.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = (e) => document.getElementById('thumb3').src = e.target.result;
-      r.readAsDataURL(f);
-    });
+    // File inputs (banner/thumbs/day1/day2) with null checks
+    const bannerUpload = document.getElementById('bannerUpload');
+    if (bannerUpload) {
+      bannerUpload.addEventListener('change', function(){
+        const f = this.files && this.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (e) => {
+          const img = document.getElementById('bannerImg');
+          if (img) img.src = e.target.result;
+        };
+        r.readAsDataURL(f);
+      });
+    }
+    
+    const thumb1Upload = document.getElementById('thumb1Upload');
+    if (thumb1Upload) {
+      thumb1Upload.addEventListener('change', function(){
+        const f = this.files && this.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (e) => {
+          const img = document.getElementById('thumb1');
+          if (img) img.src = e.target.result;
+        };
+        r.readAsDataURL(f);
+      });
+    }
+    
+    const thumb2Upload = document.getElementById('thumb2Upload');
+    if (thumb2Upload) {
+      thumb2Upload.addEventListener('change', function(){
+        const f = this.files && this.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (e) => {
+          const img = document.getElementById('thumb2');
+          if (img) img.src = e.target.result;
+        };
+        r.readAsDataURL(f);
+      });
+    }
+    
+    const thumb3Upload = document.getElementById('thumb3Upload');
+    if (thumb3Upload) {
+      thumb3Upload.addEventListener('change', function(){
+        const f = this.files && this.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (e) => {
+          const img = document.getElementById('thumb3');
+          if (img) img.src = e.target.result;
+        };
+        r.readAsDataURL(f);
+      });
+    }
 
-    // Day image upload inputs (existing)
-    document.getElementById('dayImgUpload1').addEventListener('change', function(){
-      const f = this.files && this.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = (e) => document.getElementById('dayImg1').src = e.target.result;
-      r.readAsDataURL(f);
-    });
-    document.getElementById('dayImgUpload2').addEventListener('change', function(){
-      const f = this.files && this.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = (e) => document.getElementById('dayImg2').src = e.target.result;
-      r.readAsDataURL(f);
-    });
+    // Day image upload inputs (existing) with null checks
+    const dayImgUpload1 = document.getElementById('dayImgUpload1');
+    if (dayImgUpload1) {
+      dayImgUpload1.addEventListener('change', function(){
+        const f = this.files && this.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (e) => {
+          const img = document.getElementById('dayImg1');
+          if (img) img.src = e.target.result;
+        };
+        r.readAsDataURL(f);
+      });
+    }
+    
+    const dayImgUpload2 = document.getElementById('dayImgUpload2');
+    if (dayImgUpload2) {
+      dayImgUpload2.addEventListener('change', function(){
+        const f = this.files && this.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (e) => {
+          const img = document.getElementById('dayImg2');
+          if (img) img.src = e.target.result;
+        };
+        r.readAsDataURL(f);
+      });
+    }
 
     // Clicking the "Change" labels triggers the hidden inputs
     document.querySelectorAll('label.file-btn').forEach(lbl => {
@@ -1760,17 +1563,27 @@
       });
     });
 
-    // WhatsApp auto message generator
+    // WhatsApp auto message generator with null checks
     function updateWhatsAppLinks() {
-      const packageTitle = document.getElementById("packageTitle").innerText.trim();
-      const message = encodeURIComponent(`Hi, I'm interested in your package: "${packageTitle}". Please share more details.`);
+      const packageTitle = document.getElementById("packageTitle");
+      if (!packageTitle) return;
+      
+      const message = encodeURIComponent(`Hi, I'm interested in your package: "${packageTitle.innerText.trim()}". Please share more details.`);
       const numbers = ["919997085457", "919520232324"];
-      // two places for links
-      document.getElementById("whatsapp1_small").href = `https://wa.me/${numbers[0]}?text=${message}`;
-      document.getElementById("whatsapp2_small").href = `https://wa.me/${numbers[1]}?text=${message}`;
+      
+      // two places for links with null checks
+      const whatsapp1 = document.getElementById("whatsapp1_small");
+      if (whatsapp1) whatsapp1.href = `https://wa.me/${numbers[0]}?text=${message}`;
+      
+      const whatsapp2 = document.getElementById("whatsapp2_small");
+      if (whatsapp2) whatsapp2.href = `https://wa.me/${numbers[1]}?text=${message}`;
+      
       // also update main big links if present
-      if (document.getElementById("whatsapp1")) document.getElementById("whatsapp1").href = `https://wa.me/${numbers[0]}?text=${message}`;
-      if (document.getElementById("whatsapp2")) document.getElementById("whatsapp2").href = `https://wa.me/${numbers[1]}?text=${message}`;
+      const whatsapp1Main = document.getElementById("whatsapp1");
+      if (whatsapp1Main) whatsapp1Main.href = `https://wa.me/${numbers[0]}?text=${message}`;
+      
+      const whatsapp2Main = document.getElementById("whatsapp2");
+      if (whatsapp2Main) whatsapp2Main.href = `https://wa.me/${numbers[1]}?text=${message}`;
     }
 
     // Run once and whenever title changes
@@ -1800,6 +1613,7 @@
     document.querySelector(".deleteCustomerBtn").addEventListener("click", () => {
       if (confirm("Clear travel partner name?")) {
         document.getElementById("customerName").innerText = "Enter Travel Partner";
+        showNotification('Travel partner name cleared!', 'success');
       }
     });
 
@@ -1850,6 +1664,7 @@
     document.querySelector(".deleteHandlerBtn").addEventListener("click", () => {
       if (confirm("Clear handler name?")) {
         document.getElementById("handledBy").innerText = "Enter Handler Name";
+        showNotification('Handler name cleared!', 'success');
       }
     });
 
@@ -1924,18 +1739,19 @@
       document.getElementById('hotelImage').src = input;
       document.getElementById('hotelLinkSection').style.display = 'none';
       document.getElementById('hotelLinkInput').value = '';
-      alert('✅ Hotel image updated!');
+      showNotification('Hotel image updated successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid image URL.');
+      showNotification('Please enter a valid image URL', 'warning');
     }
   }
   
   function deleteHotelLink() {
-    if (confirm('Reset hotel image to default?')) {
-      document.getElementById('hotelImage').src = 'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg';
-      document.getElementById('hotelLinkInput').value = '';
-      document.getElementById('hotelLinkSection').style.display = 'none';
-      alert('✅ Hotel image reset!');
+    if (confirm('Delete this hotel section?')) {
+      const defaultHotelSection = document.querySelector('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
+      if (defaultHotelSection) {
+        defaultHotelSection.remove();
+        showNotification('Hotel section deleted successfully!', 'success');
+      }
     }
   }
 </script>
@@ -1949,9 +1765,9 @@
       linkBtn.href = input;
       linkBtn.textContent = "View More Details"; // change button text
       inputBox.style.display = "none"; // hide input and button
-      alert('✅ Link attached successfully!');
+      showNotification('Package link attached successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid link first.');
+      showNotification('Please enter a valid link first', 'warning');
     }
   }
 </script>
@@ -1966,9 +1782,9 @@
       linkBtn1.href = input1;
       linkBtn1.textContent = "View"; // change button text
       inputBox1.style.display = "none"; // hide input and button
-      alert('✅ Link attached successfully!');
+      showNotification('Package link attached successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid link first.');
+      showNotification('Please enter a valid link first', 'warning');
     }
   }
  function similarpreviewImage1(event) {
@@ -1991,9 +1807,9 @@
       linkBtn.href = input;
       linkBtn.textContent = "View"; // change button text
       inputBox.style.display = "none"; // hide input and button
-      alert('✅ Link attached successfully!');
+      showNotification('Package link attached successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid link first.');
+      showNotification('Please enter a valid link first', 'warning');
     }
   }
   
@@ -2006,9 +1822,9 @@
       linkBtn.href = input;
       linkBtn.textContent = "View";
       inputBox.style.display = "none";
-      alert('✅ Link attached successfully!');
+      showNotification('Package link attached successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid link first.');
+      showNotification('Please enter a valid link first', 'warning');
     }
   }
   
@@ -2021,9 +1837,9 @@
       linkBtn.href = input;
       linkBtn.textContent = "View";
       inputBox.style.display = "none";
-      alert('✅ Link attached successfully!');
+      showNotification('Package link attached successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid link first.');
+      showNotification('Please enter a valid link first', 'warning');
     }
   }
   
@@ -2036,9 +1852,9 @@
       linkBtn.href = input;
       linkBtn.textContent = "View";
       inputBox.style.display = "none";
-      alert('✅ Link attached successfully!');
+      showNotification('Package link attached successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid link first.');
+      showNotification('Please enter a valid link first', 'warning');
     }
   }
   
@@ -2051,9 +1867,9 @@
       linkBtn.href = input;
       linkBtn.textContent = "View";
       inputBox.style.display = "none";
-      alert('✅ Link attached successfully!');
+      showNotification('Package link attached successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid link first.');
+      showNotification('Please enter a valid link first', 'warning');
     }
   }
 </script>
@@ -2089,9 +1905,9 @@
       document.getElementById(imgId).src = input;
       document.getElementById(linkId).style.display = 'none';
       document.getElementById(inputId).value = '';
-      alert('✅ Hotel image updated!');
+      showNotification('Hotel image updated successfully!', 'success');
     } else {
-      alert('⚠️ Please enter a valid image URL.');
+      showNotification('Please enter a valid image URL', 'warning');
     }
   }
   
@@ -2101,13 +1917,237 @@
       const hotelRow = document.querySelector(`tr[data-hotel-id="${uniqueId}"]`);
       if (hotelSection) hotelSection.remove();
       if (hotelRow) hotelRow.remove();
+      showNotification('Hotel section deleted successfully!', 'success');
+    }
+  }
+  
+  // Add Hotel Function - matches existing structure exactly
+  function addHotel() {
+    console.log('addHotel function called');
+    const hotelCount = document.querySelectorAll('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]').length + 1;
+    const uniqueId = 'hotel' + hotelCount + '_' + Date.now();
+    console.log('Hotel count:', hotelCount, 'Unique ID:', uniqueId);
+    
+    // Create new hotel section with exact same structure as existing
+    const hotelImageSection = document.createElement('div');
+    hotelImageSection.id = 'hotelSection' + uniqueId;
+    hotelImageSection.style.cssText = 'display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:20px; margin-bottom:20px;';
+    
+    hotelImageSection.innerHTML = `
+      <!-- Left: Hotel Image with Title -->
+      <div style="flex:1; min-width:300px; max-width:450px;">
+        <h2 contenteditable="true" style="font-size:24px; color:black; margin:0 0 10px 0;">Hotel ${hotelCount}</h2>
+        <div style="position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:16px; border:2px solid #07505640; cursor:pointer;" onclick="document.getElementById('upload${uniqueId}').click()">
+          <img id="img${uniqueId}" src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg" alt="Hotel Image" style="width:100%; height:100%; object-fit:cover;">
+          <input type="file" id="upload${uniqueId}" accept="image/*" style="display:none">
+        </div>
+      </div>
+      
+      <!-- Right: Hotel Info -->
+      <div style="flex:1; min-width:250px; display:flex; flex-direction:column; justify-content:flex-start;">
+        <div style="font-size:14px; color:#075056; line-height:1.4; margin-top:44px;">
+          <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Category:</strong> <span contenteditable="true">3-Star Standard</span></div>
+          <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Room Type:</strong> <span contenteditable="true">Standard Double/Twin Room</span></div>
+          <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Meal Plan:</strong> <span contenteditable="true">Breakfast Included</span></div>
+          
+          <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Check-in:</strong> <input type="date" id="checkinDate${uniqueId}" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px; margin-right:5px;"> <input type="time" id="checkinTime${uniqueId}" value="15:00" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;" step="60"></div>
+          <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Check-out:</strong> <input type="date" id="checkoutDate${uniqueId}" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px; margin-right:5px;"> <input type="time" id="checkoutTime${uniqueId}" value="12:00" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;" step="60"></div>
+          
+          <div style="display:flex; margin-bottom:3px;"><strong style="width:140px;">Reference No.:</strong> <span id="bookingRef${uniqueId}" contenteditable="true" style="background:#f0f8ff; padding:2px 6px; border-radius:3px;">BK-2024-${Math.floor(Math.random() * 9000) + 1000}</span></div>
+          
+          <!-- Hotel Image Options -->
+          <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+            <button onclick="document.getElementById('upload${uniqueId}').click()" style="background:#1e3a8a; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">📁 Upload</button>
+            <button onclick="toggleNewHotelLink('link${uniqueId}')" style="background:#075056; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🔗 Link</button>
+            <button onclick="deleteHotelSection('${uniqueId}')" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️ Delete</button>
+          </div>
+        </div>
+        
+        <div id="link${uniqueId}" style="display:none; margin-top:8px;">
+          <input type="text" id="linkInput${uniqueId}" placeholder="Enter hotel image URL..." style="width:70%; padding:4px; border:1px solid #ddd; border-radius:4px; font-size:11px;">
+          <button onclick="setNewHotelImage('linkInput${uniqueId}', 'img${uniqueId}', 'link${uniqueId}')" style="background:#075056; color:white; border:none; padding:4px 8px; border-radius:4px; margin-left:3px; cursor:pointer; font-size:11px;">Set</button>
+        </div>
+      </div>
+    `;
+    
+    // Find the default hotel section and insert after it
+    const defaultHotelSection = document.querySelector('div[style*="display:flex; align-items:flex-start; justify-content:space-between"]');
+    
+    if (defaultHotelSection && defaultHotelSection.parentNode) {
+      defaultHotelSection.parentNode.insertBefore(hotelImageSection, defaultHotelSection.nextSibling);
+    } else {
+      // Fallback: add after the "Add Hotel" button
+      const addHotelBtn = document.getElementById('addHotelBtn');
+      if (addHotelBtn && addHotelBtn.parentNode) {
+        addHotelBtn.parentNode.insertAdjacentElement('afterend', hotelImageSection);
+      }
+    }
+    
+    // Set default dates
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    
+    document.getElementById(`checkinDate${uniqueId}`).value = today;
+    document.getElementById(`checkoutDate${uniqueId}`).value = tomorrowStr;
+    
+    // Add image upload functionality
+    const uploadInput = document.getElementById('upload' + uniqueId);
+    uploadInput.addEventListener('change', function(event) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        document.getElementById('img' + uniqueId).src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    });
+    
+    showNotification('New hotel added successfully!', 'success');
+  }
+  
+  // Add Transfer Function - matches existing table structure
+  function addTransfer() {
+    console.log('addTransfer function called');
+    const tbody = document.querySelector('#transferTable tbody');
+    console.log('Transfer tbody found:', tbody);
+    if (!tbody) {
+      showNotification('Transfer table not found!', 'error');
+      return;
+    }
+    
+    const newRow = document.createElement('tr');
+    newRow.style.borderBottom = '1px solid #eee';
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    newRow.innerHTML = `
+      <td style="padding:12px; border-right:1px solid #eee;"><input type="date" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px;" value="${today}"></td>
+      <td style="padding:12px; border-right:1px solid #eee;"><input type="time" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;" value="12:00"></td>
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Pick Up Location</td>
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Return Location</td>
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Flight Details</td>
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">Transfer Type</td>
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">POC Number</td>
+      <td style="padding:12px;"><button onclick="deleteTransferRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
+    `;
+    
+    tbody.appendChild(newRow);
+    showNotification('Transfer entry added successfully!', 'success');
+  }
+  
+  // Add Day-wise Itinerary Function - matches existing table structure
+  function addItineraryDay() {
+    console.log('addItineraryDay function called');
+    const tbody = document.querySelector('#itineraryTable tbody');
+    console.log('Itinerary tbody found:', tbody);
+    if (!tbody) {
+      showNotification('Itinerary table not found!', 'error');
+      return;
+    }
+    
+    const dayCount = tbody.children.length + 1;
+    const today = new Date();
+    today.setDate(today.getDate() + dayCount - 1);
+    const dateStr = today.toISOString().split('T')[0];
+    
+    const newRow = document.createElement('tr');
+    newRow.style.borderBottom = '1px solid #eee';
+    
+    newRow.innerHTML = `
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-weight:bold; font-size:12px;">Day ${dayCount}</td>
+      <td style="padding:12px; border-right:1px solid #eee;"><input type="date" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:110px;" value="${dateStr}"></td>
+      <td style="padding:12px; border-right:1px solid #eee;">
+        <input type="time" value="08:00" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;" step="60">
+      </td>
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px; word-wrap:break-word;">Enter Activity Details</td>
+      <td style="padding:12px; border-right:1px solid #eee;">
+        <input type="time" value="18:00" style="padding:4px; border:1px solid #075056; border-radius:3px; font-size:12px; width:100px;" step="60">
+      </td>
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:12px;">Vehicle Type</td>
+      <td contenteditable="true" style="padding:12px; border-right:1px solid #eee; font-size:11px;">POC Number</td>
+      <td style="padding:6px; text-align:center;"><button onclick="deleteItineraryRow(this)" style="background:#DC143C; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">🗑️</button></td>
+    `;
+    
+    tbody.appendChild(newRow);
+    showNotification('New itinerary day added successfully!', 'success');
+  }
+  
+  // Delete functions
+  function deleteTransferRow(button) {
+    if (confirm('Delete this transfer entry?')) {
+      button.closest('tr').remove();
+      showNotification('Transfer entry deleted successfully!', 'success');
+    }
+  }
+  
+  function deleteItineraryRow(button) {
+    if (confirm('Delete this itinerary day?')) {
+      button.closest('tr').remove();
+      showNotification('Itinerary day deleted successfully!', 'success');
     }
   }
 </script>
 
   <!-- Include Data Manager -->
+  <!-- Notification System -->
+  <script>
+    function showNotification(message, type = 'success') {
+      // Remove existing notifications
+      const existingNotifications = document.querySelectorAll('.notification');
+      existingNotifications.forEach(notif => notif.remove());
+      
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      
+      // Set icon based on type
+      let icon = '';
+      switch(type) {
+        case 'success':
+          icon = '✅';
+          break;
+        case 'error':
+          icon = '❌';
+          break;
+        case 'warning':
+          icon = '⚠️';
+          break;
+        default:
+          icon = 'ℹ️';
+      }
+      
+      notification.innerHTML = `
+        <span class="icon">${icon}</span>
+        <span class="message">${message}</span>
+        <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+      `;
+      
+      // Add to page
+      document.body.appendChild(notification);
+      
+      // Show with animation
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      // Auto remove after 4 seconds
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.classList.remove('show');
+          setTimeout(() => {
+            if (notification.parentElement) {
+              notification.remove();
+            }
+          }, 300);
+        }
+      }, 4000);
+    }
+  </script>
+  
   <script src="data-manager.js"></script>
   <script>
+    // Functions are now called directly via onclick
+    
     // Set today's date as default
     document.addEventListener('DOMContentLoaded', function() {
       const today = new Date().toISOString().split('T')[0];

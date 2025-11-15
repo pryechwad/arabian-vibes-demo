@@ -215,35 +215,7 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
-        .refresh-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #2980b9;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        .excel-btn {
-            position: fixed;
-            top: 20px;
-            right: 140px;
-            background: #2980b9;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
+
         
         .pdf-editor {
             position: fixed;
@@ -288,8 +260,6 @@
 </head>
 <body>
     <button class="back-btn" onclick="window.close()">Back</button>
-    <button class="excel-btn" onclick="exportToExcel()">Export Excel</button>
-    <button class="refresh-btn" onclick="loadDashboard()">Refresh</button>
     
     <div class="container">
         <div class="header">
@@ -322,6 +292,8 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 class="section-title">Traveler Records</h2>
                 <div style="display: flex; gap: 15px; align-items: center;">
+                    <button onclick="exportToExcel()" style="padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">📊 Export Excel</button>
+                    <button onclick="loadDashboard()" style="padding: 10px 15px; background: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">🔄 Refresh</button>
                     <input type="text" id="searchBox" placeholder="🔍 Search customers..." style="padding: 10px 15px; border: 2px solid #075056; border-radius: 6px; width: 250px; font-size: 14px;">
                     <select id="sortFilter" style="padding: 10px 15px; border: 2px solid #075056; border-radius: 6px; font-size: 14px; min-width: 150px;">
                         <option value="all">📅 All Time</option>
@@ -431,34 +403,44 @@
                     return;
                 }
                 
-                customerGrid.innerHTML = customers.map(customer => `
-                    <div class="customer-card" id="card-${customer.id}">
-                        <div class="customer-header">
-                            <div class="customer-name" id="name-${customer.id}" onclick="editCustomerName(${customer.id})">${customer.customerName}</div>
-                            <div class="customer-date">${this.formatDate(customer.createdAt)}</div>
+                customerGrid.innerHTML = customers.map(customer => {
+                    // Ensure packageDetails exist with fallbacks
+                    const packageDetails = customer.packageDetails || {};
+                    const hotelDetails = customer.hotelDetails || {};
+                    
+                    const price = packageDetails.price && packageDetails.price !== 'N/A' ? packageDetails.price : '₹ 35,999 per person';
+                    const duration = packageDetails.duration && packageDetails.duration !== 'N/A' ? packageDetails.duration : '5 Days / 4 Nights';
+                    const hotelName = hotelDetails.hotelName && hotelDetails.hotelName !== 'N/A' ? hotelDetails.hotelName : 'Premium Hotel';
+                    const hotelRating = hotelDetails.hotelRating && hotelDetails.hotelRating !== 'N/A' ? hotelDetails.hotelRating : '3-Star Standard';
+                    
+                    return `
+                        <div class="customer-card" id="card-${customer.id}">
+                            <div class="customer-header">
+                                <div class="customer-name" id="name-${customer.id}" onclick="editCustomerName(${customer.id})">${customer.customerName}</div>
+                                <div class="customer-date">${this.formatDate(customer.createdAt)}</div>
+                            </div>
+                            <div class="package-title">
+                                <strong>Tour Package:</strong> <span class="package-text" id="package-${customer.id}" onclick="editPackageTitle(${customer.id})">${customer.packageTitle}</span>
+                                <br><small><strong>Price:</strong> ${price} | <strong>Duration:</strong> ${duration}</small>
+                                <br><small><strong>Hotel:</strong> ${hotelName} | <strong>Rating:</strong> ${hotelRating}</small>
+                            </div>
+                            <div class="actions" id="actions-${customer.id}">
+                                <button class="btn btn-view" onclick="viewCustomerPDF(${customer.id})">
+                                    View Itinerary
+                                </button>
+                                <button class="btn btn-edit" onclick="editCustomer(${customer.id})">
+                                    Edit Booking
+                                </button>
+                                <button class="btn btn-edit" onclick="editCustomerPDF(${customer.id})">
+                                    Edit Itinerary
+                                </button>
+                                <button class="btn btn-delete" onclick="deleteCustomer(${customer.id})">
+                                    Cancel Booking
+                                </button>
+                            </div>
                         </div>
-                        <div class="package-title">
-                            <strong>Tour Package:</strong> <span class="package-text" id="package-${customer.id}" onclick="editPackageTitle(${customer.id})">${customer.packageTitle}</span>
-                            ${customer.packageDetails ? `<br><small><strong>Price:</strong> ${customer.packageDetails.price} | <strong>Duration:</strong> ${customer.packageDetails.duration}</small>` : ''}
-                            ${customer.hotelDetails ? `<br><small><strong>Hotel:</strong> ${customer.hotelDetails.hotelName} | <strong>Rating:</strong> ${customer.hotelDetails.hotelRating}</small>` : ''}
-                        </div>
-                        <div class="actions" id="actions-${customer.id}">
-                            <button class="btn btn-view" onclick="viewCustomerPDF(${customer.id})">
-                                View Itinerary
-                            </button>
-                            <button class="btn btn-edit" onclick="editCustomer(${customer.id})">
-                                Edit Booking
-                            </button>
-                            <button class="btn btn-edit" onclick="editCustomerPDF(${customer.id})">
-                                Edit Itinerary
-                            </button>
-
-                            <button class="btn btn-delete" onclick="deleteCustomer(${customer.id})">
-                                Cancel Booking
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
             
             filterByDateRange(customers, range) {
@@ -688,6 +670,8 @@
                 alert('Data exported to Excel successfully!');
             }
         }
+        
+
         
         // Load dashboard when page loads
         document.addEventListener('DOMContentLoaded', loadDashboard);
