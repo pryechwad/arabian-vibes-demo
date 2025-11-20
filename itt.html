@@ -281,7 +281,8 @@
       section:last-of-type { display: none !important; } /* Hide similar packages */
       .section { margin-bottom: 8px !important; }
       table { margin-bottom: 10px !important; }
-      /* Hide Actions column for hotel and transfer tables only */
+      /* Show hotel table only in PDF and hide Actions column */
+      #hotelTableContainer { display: block !important; }
       #hotelTable th:nth-child(6), #hotelTable td:nth-child(6) { display: none !important; }
       #transferTable th:nth-child(8), #transferTable td:nth-child(8) { display: none !important; }
       /* Hide all buttons in PDF */
@@ -519,7 +520,7 @@
           </div>
         </div>
         
-        <!-- Hidden table for PDF generation -->
+        <!-- Hotel table for PDF generation -->
         <div class="table-container" id="hotelTableContainer" style="background:white; border:1px solid #1e3a8a; border-radius:8px; overflow:hidden; margin-bottom:20px; display:none;">
           <table id="hotelTable" style="width:100%; border-collapse:collapse; min-width:500px;">
             <thead>
@@ -1150,13 +1151,19 @@
           table.style.tableLayout = 'fixed';
         }
         
-        // Populate with current hotel data
+        // Collect all hotel data from webpage
         const tbody = hotelTable.querySelector('tbody');
         if (tbody) {
+          let hotelRows = '';
+          
+          // Get default hotel data
+          const defaultHotelTitle = element.querySelector('h2[contenteditable="true"]')?.innerText || 'Default Hotel';
           const checkinDate = element.querySelector('#checkinDate')?.value;
           const checkinTime = element.querySelector('#checkinTime')?.value || '15:00';
           const checkoutDate = element.querySelector('#checkoutDate')?.value;
           const checkoutTime = element.querySelector('#checkoutTime')?.value || '12:00';
+          const roomType = element.querySelector('span[contenteditable="true"]')?.innerText || 'Standard Room';
+          const mealPlan = element.querySelectorAll('span[contenteditable="true"]')[2]?.innerText || 'Breakfast Included';
           
           // Convert times to 12-hour format with AM/PM
           const formatTime = (time24) => {
@@ -1173,15 +1180,46 @@
           const checkinDisplay = checkinDate ? `${new Date(checkinDate).toLocaleDateString('en-GB')} ${checkinTimeFormatted}` : `01/01/2025 3:00 PM`;
           const checkoutDisplay = checkoutDate ? `${new Date(checkoutDate).toLocaleDateString('en-GB')} ${checkoutTimeFormatted}` : `04/01/2025 12:00 PM`;
           
-          tbody.innerHTML = `
+          // Add default hotel row
+          hotelRows += `
             <tr style="border-bottom:1px solid #eee;">
-              <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">Guest Details</td>
+              <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${defaultHotelTitle}</td>
               <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${checkinDisplay}</td>
               <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${checkoutDisplay}</td>
-              <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">Standard Room</td>
-              <td style="padding:8px; font-size:12px;">Breakfast Included</td>
+              <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${roomType}</td>
+              <td style="padding:8px; font-size:12px;">${mealPlan}</td>
             </tr>
           `;
+          
+          // Get all additional hotel sections
+          const additionalHotels = element.querySelectorAll('div[id*="hotelSection"]');
+          additionalHotels.forEach((hotelSection, index) => {
+            const hotelTitle = hotelSection.querySelector('h2[contenteditable="true"]')?.innerText || `Hotel ${index + 2}`;
+            const hotelCheckinDate = hotelSection.querySelector('input[type="date"][id*="checkinDate"]')?.value;
+            const hotelCheckinTime = hotelSection.querySelector('input[type="time"][id*="checkinTime"]')?.value || '15:00';
+            const hotelCheckoutDate = hotelSection.querySelector('input[type="date"][id*="checkoutDate"]')?.value;
+            const hotelCheckoutTime = hotelSection.querySelector('input[type="time"][id*="checkoutTime"]')?.value || '12:00';
+            const hotelRoomType = hotelSection.querySelectorAll('span[contenteditable="true"]')[1]?.innerText || 'Standard Room';
+            const hotelMealPlan = hotelSection.querySelectorAll('span[contenteditable="true"]')[2]?.innerText || 'Breakfast Included';
+            
+            const hotelCheckinTimeFormatted = formatTime(hotelCheckinTime);
+            const hotelCheckoutTimeFormatted = formatTime(hotelCheckoutTime);
+            
+            const hotelCheckinDisplay = hotelCheckinDate ? `${new Date(hotelCheckinDate).toLocaleDateString('en-GB')} ${hotelCheckinTimeFormatted}` : `01/01/2025 3:00 PM`;
+            const hotelCheckoutDisplay = hotelCheckoutDate ? `${new Date(hotelCheckoutDate).toLocaleDateString('en-GB')} ${hotelCheckoutTimeFormatted}` : `04/01/2025 12:00 PM`;
+            
+            hotelRows += `
+              <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${hotelTitle}</td>
+                <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${hotelCheckinDisplay}</td>
+                <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${hotelCheckoutDisplay}</td>
+                <td style="padding:8px; border-right:1px solid #eee; font-size:12px;">${hotelRoomType}</td>
+                <td style="padding:8px; font-size:12px;">${hotelMealPlan}</td>
+              </tr>
+            `;
+          });
+          
+          tbody.innerHTML = hotelRows;
         }
       }
       
@@ -1931,6 +1969,8 @@
       const hotelRow = document.querySelector(`tr[data-hotel-id="${uniqueId}"]`);
       if (hotelSection) hotelSection.remove();
       if (hotelRow) hotelRow.remove();
+      
+      
       showNotification('Hotel section deleted successfully!', 'success');
     }
   }
@@ -2017,6 +2057,81 @@
     });
     
     showNotification('New hotel added successfully!', 'success');
+  }
+  
+  // Function to update hotel table with current data
+  function updateHotelTable() {
+    const hotelTableBody = document.querySelector('#hotelTable tbody');
+    if (!hotelTableBody) return;
+    
+    let hotelRows = '';
+    
+    // Get default hotel data
+    const defaultHotelTitle = document.querySelector('h2[contenteditable="true"]')?.innerText || 'Default Hotel';
+    const checkinDate = document.querySelector('#checkinDate')?.value;
+    const checkinTime = document.querySelector('#checkinTime')?.value || '15:00';
+    const checkoutDate = document.querySelector('#checkoutDate')?.value;
+    const checkoutTime = document.querySelector('#checkoutTime')?.value || '12:00';
+    const roomType = document.querySelector('span[contenteditable="true"]')?.innerText || 'Standard Room';
+    const mealPlan = document.querySelectorAll('span[contenteditable="true"]')[2]?.innerText || 'Breakfast Included';
+    
+    // Format time function
+    const formatTime = (time24) => {
+      if (!time24) return time24;
+      const [hours, minutes] = time24.split(':');
+      const hour12 = hours % 12 || 12;
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      return `${hour12}:${minutes} ${ampm}`;
+    };
+    
+    const checkinTimeFormatted = formatTime(checkinTime || '15:00');
+    const checkoutTimeFormatted = formatTime(checkoutTime || '12:00');
+    
+    const checkinDisplay = checkinDate ? `${new Date(checkinDate).toLocaleDateString('en-GB')} ${checkinTimeFormatted}` : `Day 1 3:00 PM`;
+    const checkoutDisplay = checkoutDate ? `${new Date(checkoutDate).toLocaleDateString('en-GB')} ${checkoutTimeFormatted}` : `Day 4 12:00 PM`;
+    
+    // Add default hotel row
+    hotelRows += `
+      <tr style="border-bottom:1px solid #eee;">
+        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${defaultHotelTitle}</td>
+        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${checkinDisplay}</td>
+        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${checkoutDisplay}</td>
+        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${roomType}</td>
+        <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${mealPlan}</td>
+        <td style="padding:12px;"><button class="editHotelBtn" style="background:transparent; color:#1e3a8a; border:none; padding:4px; cursor:pointer; font-size:16px; margin-right:8px;">✏️</button><button class="deleteHotelBtn" style="background:transparent; color:#d32f2f; border:none; padding:4px; cursor:pointer; font-size:16px;">🗑️</button></td>
+      </tr>
+    `;
+    
+    // Get all additional hotel sections
+    const additionalHotels = document.querySelectorAll('div[id*="hotelSection"]');
+    additionalHotels.forEach((hotelSection, index) => {
+      const hotelTitle = hotelSection.querySelector('h2[contenteditable="true"]')?.innerText || `Hotel ${index + 2}`;
+      const hotelCheckinDate = hotelSection.querySelector('input[type="date"][id*="checkinDate"]')?.value;
+      const hotelCheckinTime = hotelSection.querySelector('input[type="time"][id*="checkinTime"]')?.value || '15:00';
+      const hotelCheckoutDate = hotelSection.querySelector('input[type="date"][id*="checkoutDate"]')?.value;
+      const hotelCheckoutTime = hotelSection.querySelector('input[type="time"][id*="checkoutTime"]')?.value || '12:00';
+      const hotelRoomType = hotelSection.querySelectorAll('span[contenteditable="true"]')[1]?.innerText || 'Standard Room';
+      const hotelMealPlan = hotelSection.querySelectorAll('span[contenteditable="true"]')[2]?.innerText || 'Breakfast Included';
+      
+      const hotelCheckinTimeFormatted = formatTime(hotelCheckinTime);
+      const hotelCheckoutTimeFormatted = formatTime(hotelCheckoutTime);
+      
+      const hotelCheckinDisplay = hotelCheckinDate ? `${new Date(hotelCheckinDate).toLocaleDateString('en-GB')} ${hotelCheckinTimeFormatted}` : `Day ${index + 2} 3:00 PM`;
+      const hotelCheckoutDisplay = hotelCheckoutDate ? `${new Date(hotelCheckoutDate).toLocaleDateString('en-GB')} ${hotelCheckoutTimeFormatted}` : `Day ${index + 5} 12:00 PM`;
+      
+      hotelRows += `
+        <tr style="border-bottom:1px solid #eee;">
+          <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${hotelTitle}</td>
+          <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${hotelCheckinDisplay}</td>
+          <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${hotelCheckoutDisplay}</td>
+          <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${hotelRoomType}</td>
+          <td contenteditable="true" style="padding:12px; border-right:1px solid #eee;">${hotelMealPlan}</td>
+          <td style="padding:12px;"><button class="editHotelBtn" style="background:transparent; color:#1e3a8a; border:none; padding:4px; cursor:pointer; font-size:16px; margin-right:8px;">✏️</button><button class="deleteHotelBtn" style="background:transparent; color:#d32f2f; border:none; padding:4px; cursor:pointer; font-size:16px;">🗑️</button></td>
+        </tr>
+      `;
+    });
+    
+    hotelTableBody.innerHTML = hotelRows;
   }
   
   // Add Transfer Function - matches existing table structure
@@ -2213,6 +2328,8 @@
         date.setDate(date.getDate() + index);
         input.value = date.toISOString().split('T')[0];
       });
+      
+
     });
   </script>
 </body>
