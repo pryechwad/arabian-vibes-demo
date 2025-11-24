@@ -1162,8 +1162,10 @@
           const checkinTime = element.querySelector('#checkinTime')?.value || '15:00';
           const checkoutDate = element.querySelector('#checkoutDate')?.value;
           const checkoutTime = element.querySelector('#checkoutTime')?.value || '12:00';
-          const roomType = element.querySelector('span[contenteditable="true"]')?.innerText || 'Standard Room';
-          const mealPlan = element.querySelectorAll('span[contenteditable="true"]')[2]?.innerText || 'Breakfast Included';
+          // Get room type and meal plan from hotel section specifically
+          const hotelInfoDiv = element.querySelector('div[style*="display:flex; align-items:flex-start; justify-content:space-between"] div[style*="font-size:14px"]');
+          const roomType = hotelInfoDiv?.querySelectorAll('span[contenteditable="true"]')[1]?.innerText || 'Standard Double/Twin Room';
+          const mealPlan = hotelInfoDiv?.querySelectorAll('span[contenteditable="true"]')[2]?.innerText || 'Breakfast Included';
           
           // Convert times to 12-hour format with AM/PM
           const formatTime = (time24) => {
@@ -2072,8 +2074,10 @@
     const checkinTime = document.querySelector('#checkinTime')?.value || '15:00';
     const checkoutDate = document.querySelector('#checkoutDate')?.value;
     const checkoutTime = document.querySelector('#checkoutTime')?.value || '12:00';
-    const roomType = document.querySelector('span[contenteditable="true"]')?.innerText || 'Standard Room';
-    const mealPlan = document.querySelectorAll('span[contenteditable="true"]')[2]?.innerText || 'Breakfast Included';
+    // Get room type and meal plan from hotel section specifically
+    const hotelInfoDiv = document.querySelector('div[style*="display:flex; align-items:flex-start; justify-content:space-between"] div[style*="font-size:14px"]');
+    const roomType = hotelInfoDiv?.querySelectorAll('span[contenteditable="true"]')[1]?.innerText || 'Standard Double/Twin Room';
+    const mealPlan = hotelInfoDiv?.querySelectorAll('span[contenteditable="true"]')[2]?.innerText || 'Breakfast Included';
     
     // Format time function
     const formatTime = (time24) => {
